@@ -1,0 +1,47 @@
+# General ignores
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.idea/
+.vscode/
+.env
+.env.*.local
+.env.local
+.env.backup
+.phpunit.result.cache
+
+# Laravel specific ignores
+/vendor
+/node_modules
+/bootstrap/cache/*.php
+/storage/*.key
+/public/hot
+/public/storage
+/public/build
+/public/css
+/public/js
+/public/mix-manifest.json
+/public/vite.manifest.json
+/public/build
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.env.dusk.local
+
+# Angular specific ignores
+/node_modules
+/dist
+/.angular/cache
+/coverage
+npm-debug.log
+yarn-error.log
+
+# LLM/Gemini specific ignores
+# Ignore contents of the LLM notes directory, but keep the directory itself
+/notes/llm/*
+!/notes/llm/.gitkeep
