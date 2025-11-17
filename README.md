@@ -46,6 +46,23 @@ Each major step:
 
 The entire process is transparent and reproducible.
 
+To keep both CLIs in sync we mirror the slash commands into `.codex/codex.toml`.  
+After editing `.gemini/commands.yaml`, run:
+
+```
+npm run sync:commands
+```
+
+This script regenerates the Codex config so `codex run <command>` and Gemini slash commands stay identical.
+
+For a one-off run directly from the terminal (without the interactive Codex prompt), use:
+
+```
+npm run codex -- backend:make-migrations
+```
+
+That command reads the prompt from `.gemini/commands.yaml`, forwards it to `codex exec`, and automatically stores the full Markdown log in `notes/llm/`.
+
 ---
 
 ### 🧰 How to run the project

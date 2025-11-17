@@ -1,0 +1,11 @@
+{
+  "name": "helpdesk-lite",
+  "private": true,
+  "scripts": {
+    "sync:commands": "node scripts/sync-commands.mjs",
+    "codex": "node scripts/run-codex-command.mjs"
+  },
+  "devDependencies": {
+    "yaml": "^2.6.0"
+  }
+}

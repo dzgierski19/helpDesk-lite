@@ -1,0 +1,45 @@
+# Auto-generated from .gemini/commands.yaml
+# Run `npm run sync:commands` after editing Gemini slash commands.
+
+[commands."backend:make-migrations"]
+prompt = """
+As a Laravel developer, your task is to generate the necessary database migration files based on the provided `project_spec.md`.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+
+You need to create or modify three migration files for the following models: `User`, `Ticket`, and `TicketStatusChange`.
+
+**1. Users Table Migration (Modify existing):**
+   - Modify the existing `create_users_table` migration to add a `role` column.
+   - `role`: enum with values `admin`, `agent`, `reporter`. This column should be added after the `password` column.
+
+**2. Tickets Table Migration (New file):**
+   - Create a new migration file for the `tickets` table.
+   - Fields:
+     - `id`: primary key, auto-increment.
+     - `title`: string (255), required.
+     - `description`: text, required.
+     - `priority`: enum with values `low`, `medium`, `high`.
+     - `status`: enum with values `new`, `in_progress`, `resolved`.
+     - `assignee_id`: integer, nullable, foreign key to `users.id`.
+     - `creator_id`: integer, required, foreign key to `users.id`.
+     - `tags`: json.
+     - `created_at`: timestamp.
+     - `updated_at`: timestamp.
+   - Ensure foreign key constraints are correctly defined.
+
+**3. TicketStatusChanges Table Migration (New file):**
+   - Create a new migration file for the `ticket_status_changes` table.
+   - Fields:
+     - `id`: primary key, auto-increment.
+     - `ticket_id`: integer, foreign key to `tickets.id`.
+     - `old_status`: enum with values `new`, `in_progress`, `resolved`.
+     - `new_status`: enum with values `new`, `in_progress`, `resolved`.
+     - `changed_at`: timestamp.
+   - Ensure foreign key constraints are correctly defined.
+
+Place all generated migration files in the `backend/database/migrations/` directory.
+Provide the full PHP code for each migration file.
+
+"""
