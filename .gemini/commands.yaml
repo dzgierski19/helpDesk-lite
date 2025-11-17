@@ -39,3 +39,37 @@ commands:
 
       Place all generated migration files in the `backend/database/migrations/` directory.
       Provide the full PHP code for each migration file.
+  backend:make-models:
+    prompt: |
+      As a Laravel developer, your task is to generate the necessary Eloquent Model files based on the provided `project_spec.md`.
+      The database used is PostgreSQL.
+
+      {{file "project_spec.md"}}
+
+      You need to create or modify three Eloquent Model files: `User.php`, `Ticket.php`, and `TicketStatusChange.php`.
+
+      **1. User Model (Modify existing `User.php`):**
+         - Add `role` to the `$casts` property, casting it as a string enum. The enum values are `admin`, `agent`, `reporter`.
+         - Define a `ticketsCreated()` relationship: a user can create many tickets (hasMany `Ticket` where `creator_id` is the foreign key).
+         - Define a `ticketsAssigned()` relationship: a user can be assigned many tickets (hasMany `Ticket` where `assignee_id` is the foreign key).
+
+      **2. Ticket Model (Create `Ticket.php`):**
+         - Define the `$fillable` property to allow mass assignment for `title`, `description`, `priority`, `status`, `assignee_id`, `creator_id`, `tags`.
+         - Define the `$casts` property for:
+           - `priority`: cast as a string enum (`low`, `medium`, `high`).
+           - `status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+           - `tags`: cast as `array` (Laravel will handle JSON serialization/deserialization).
+         - Define a `assignee()` relationship: a ticket belongs to an `assignee` (belongsTo `User`, using `assignee_id`).
+         - Define a `creator()` relationship: a ticket belongs to a `creator` (belongsTo `User`, using `creator_id`).
+           - Define a `statusChanges()` relationship: a ticket has many `TicketStatusChange` records (hasMany `TicketStatusChange`).
+
+      **3. TicketStatusChange Model (Create `TicketStatusChange.php`):**
+         - Define the `$fillable` property to allow mass assignment for `ticket_id`, `old_status`, `new_status`.
+         - Define the `$casts` property for:
+           - `old_status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+           - `new_status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+           - `changed_at`: cast as `datetime`.
+         - Define a `ticket()` relationship: a status change belongs to a `Ticket` (belongsTo `Ticket`).
+
+      Place all generated model files in the `backend/app/Models/` directory.
+      Provide the full PHP code for each model file.
