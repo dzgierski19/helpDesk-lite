@@ -80,3 +80,40 @@ Place all generated model files in the `backend/app/Models/` directory.
 Provide the full PHP code for each model file.
 
 """
+
+[commands."backend:make-seeders"]
+prompt = """
+As a Laravel developer, your task is to create database seeders based on the provided `project_spec.md` and the existing Enum files.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+
+Your task is to populate the `run` method of the main `DatabaseSeeder.php` file.
+
+**Instructions:**
+
+1.  **Create Users:**
+    - Create exactly three users using the `User` model factory.
+    - One user for each role defined in the `UserRole` enum (`admin`, `agent`, `reporter`).
+    - Use the `UserRole` enum when setting the role.
+    - Use a static password like 'password' for all users.
+    - Store the created 'reporter' user in a variable for later use.
+
+2.  **Create Tickets:**
+    - Create at least 5 sample tickets using the `Ticket` model factory.
+    - For the `creator_id` of all tickets, use the ID of the 'reporter' user you created above.
+    - For the `assignee_id`, you can randomly assign the 'admin' or 'agent' user, or leave it null on some tickets.
+    - Use the `TicketStatus` and `TicketPriority` enums for the `status` and `priority` fields.
+    - For the `tags` field, provide a sample JSON array of strings (e.g., `['api', 'bug']`).
+    - Use Faker for realistic titles and descriptions.
+
+3.  **Update DatabaseSeeder:**
+    - Ensure the `run()` method in `backend/database/seeders/DatabaseSeeder.php` contains all the logic to create these users and tickets.
+    - Do not add any logic to truncate or refresh the database; just the creation logic.
+
+Provide the full, updated PHP code for the `backend/database/seeders/DatabaseSeeder.php` file.
+
+"""
