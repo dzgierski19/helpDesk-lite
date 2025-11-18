@@ -561,3 +561,31 @@ commands:
            - Define modifier classes `.status-new`, `.status-in_progress`, `.status-resolved` with distinct text or background colors.
 
       Provide the full code for all new and modified files.
+  frontend:make-login-component:
+    prompt: |
+      As an Angular developer, your task is to create a `LoginComponent`. This component will serve as a "fake login" screen where the user can select their role.
+
+      **Context Files:**
+      {{file "frontend/src/app/services/auth.service.ts"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+
+      **Instructions:**
+
+      **1. Create `LoginComponent` in `frontend/src/app/components/login/`:**
+         - **`login.component.ts`:**
+           - Inject `AuthService` and `Router`.
+           - Expose the `UserRole` enum values to the template (e.g., `userRoles = Object.values(UserRole);`).
+           - Create a public method `onLogin(role: UserRole)`.
+           - This method should call `this.authService.login(role)` and then navigate the user to the `/tickets` route using `this.router.navigate(['/tickets']);`.
+         - **`login.component.html`:**
+           - Use Angular Material components for a clean UI.
+           - Create a `mat-card` to act as a container.
+           - Inside the card, add a `mat-card-title` with text like "Select Your Role".
+           - Use an `*ngFor` to iterate over the `userRoles` array.
+           - For each role, render a `<button mat-raised-button color="primary">` that displays the role name.
+           - The button's `(click)` event should call the `onLogin(role)` method.
+         - **`login.component.scss`:**
+           - Add styles to center the login card both vertically and horizontally on the page.
+           - Use flexbox for layout and add some margin between the buttons.
+
+      Provide the full code for all three new files: `login.component.ts`, `login.component.html`, and `login.component.scss`.

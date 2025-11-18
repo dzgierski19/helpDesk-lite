@@ -1,0 +1,17 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-title>Select Your Role</mat-card-title>
+    <mat-card-content>
+      <div class="button-group">
+        <button
+          *ngFor="let role of userRoles"
+          mat-raised-button
+          color="primary"
+          (click)="onLogin(role)"
+        >
+          {{ role | titlecase }}
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
