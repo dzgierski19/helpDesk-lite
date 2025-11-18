@@ -177,6 +177,64 @@ Provide the full, updated PHP code for the `backend/database/seeders/DatabaseSee
 
 """
 
+[commands."backend:make-tests-feature-crud"]
+prompt = """
+As a Laravel developer, your task is to create a feature test file to verify the basic CRUD functionality of the tickets API.
+
+**Context Files:**
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/database/factories/UserFactory.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+{{file "backend/app/Enums/UserRole.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Feature/TicketCrudTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `TicketCrudTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait.
+    - In a `setUp()` method, create one user for each role (`admin`, `agent`, `reporter`) and store them as properties of the test class (e.g., `$this->reporter`, `$this->agent`) for easy access in all tests.
+
+2.  **Test `POST /api/tickets` (Store):**
+    - Write a test method `test_it_can_create_a_ticket()`.
+    - Prepare valid ticket data (title, description, priority, etc.).
+    - Send a `POST` request to `/api/tickets` with the data, including the `X-USER-ROLE` header set to `reporter`.
+    - Assert the response status is `201 Created`.
+    - Assert the response JSON structure contains the created ticket data.
+    - Assert that the new ticket exists in the `tickets` table.
+    - Assert that the `creator_id` on the created ticket matches the ID of `$this->reporter`.
+
+3.  **Test `GET /api/tickets/{id}` (Show):**
+    - Write a test method `test_it_can_show_a_ticket()`.
+    - Create a ticket using its factory.
+    - Send a `GET` request to `/api/tickets/{ticket_id}`.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON contains the correct ticket data (e.g., `data.title`).
+
+4.  **Test `PUT /api/tickets/{id}` (Update):**
+    - Write a test method `test_it_can_update_a_ticket()`.
+    - Create a ticket.
+    - Prepare an array with new data (e.g., a new `title` and `status`).
+    - Send a `PUT` request to `/api/tickets/{ticket_id}` with the new data.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON contains the updated data.
+    - Assert the `tickets` table in the database reflects the update.
+
+5.  **Test `DELETE /api/tickets/{id}` (Destroy):**
+    - Write a test method `test_it_can_delete_a_ticket()`.
+    - Create a ticket.
+    - Send a `DELETE` request to `/api/tickets/{ticket_id}`.
+    - Assert the response status is `204 No Content`.
+    - Assert the ticket is missing from the `tickets` table (`assertDatabaseMissing`).
+
+Provide the full PHP code for `backend/tests/Feature/TicketCrudTest.php`.
+
+"""
+
 [commands."backend:make-tests-unit"]
 prompt = """
 As a Laravel developer, your task is to create unit tests for the Eloquent model relationships based on the provided `project_spec.md` and the existing model and enum files.
