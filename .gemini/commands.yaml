@@ -194,4 +194,91 @@ commands:
           - In the logic for setting `creator_id`, replace the call to `resolveCreatorId`.
           - The `creator_id` should be determined by finding the user ID for the 'reporter' role. For this MVP, we can assume the creator is always the main reporter. Use your new helper method: `$this->getUserIdByRole(UserRole::Reporter)`.
 
-      Provide the full, refactored PHP code for the `backend/app/Http/Controllers/TicketController.php` file.
+      Provide the full, refactored PHP code for `backend/app/Http/Controllers/TicketController.php` file.
+  backend:make-tests-unit:
+    prompt: |
+      As a Laravel developer, your task is to create unit tests for the Eloquent model relationships based on the provided `project_spec.md` and the existing model and enum files.
+      The database used is PostgreSQL.
+
+      {{file "project_spec.md"}}
+      {{file "backend/app/Enums/UserRole.php"}}
+      {{file "backend/app/Enums/TicketPriority.php"}}
+      {{file "backend/app/Enums/TicketStatus.php"}}
+      {{file "backend/app/Models/User.php"}}
+      {{file "backend/app/Models/Ticket.php"}}
+      {{file "backend/app/Models/TicketStatusChange.php"}}
+      {{file "backend/database/factories/UserFactory.php"}}
+      {{file "backend/database/factories/TicketFactory.php"}}
+
+      You need to create a new PHPUnit test file: `backend/tests/Unit/ModelRelationshipsTest.php`.
+
+      **Instructions:**
+
+      1.  **Test File Setup:**
+          - Create a test class `ModelRelationshipsTest` that extends `Tests\TestCase`.
+          - Use the `RefreshDatabase` trait to ensure a clean database state for each test.
+
+      2.  **User Model Relationship Tests:**
+          - Write a test method `test_user_has_many_created_tickets()`:
+            - Create a `User` (reporter role).
+            - Create several `Ticket` instances, associating them with this user as the `creator`.
+            - Assert that `user->ticketsCreated` returns a collection of `Ticket` instances and contains the correct number of tickets.
+          - Write a test method `test_user_has_many_assigned_tickets()`:
+            - Create a `User` (agent role).
+            - Create several `Ticket` instances, associating them with this user as the `assignee`.
+            - Assert that `user->ticketsAssigned` returns a collection of `Ticket` instances and contains the correct number of tickets.
+
+      3.  **Ticket Model Relationship Tests:**
+          - Write a test method `test_ticket_belongs_to_creator()`:
+            - Create a `User` and a `Ticket` with this user as `creator`.
+            - Assert that `ticket->creator` returns an instance of `User`.
+          - Write a test method `test_ticket_belongs_to_assignee()`:
+            - Create a `User` and a `Ticket` with this user as `assignee`.
+            - Assert that `ticket->assignee` returns an instance of `User`.
+          - Write a test method `test_ticket_has_many_status_changes()`:
+            - Create a `Ticket`.
+            - Create several `TicketStatusChange` instances, associating them with this ticket.
+            - Assert that `ticket->statusChanges` returns a collection of `TicketStatusChange` instances and contains the correct number of changes.
+
+      4.  **TicketStatusChange Model Relationship Tests:**
+          - Write a test method `test_ticket_status_change_belongs_to_ticket()`:
+            - Create a `Ticket` and a `TicketStatusChange` with this ticket.
+            - Assert that `statusChange->ticket` returns an instance of `Ticket`.
+
+      **General Guidelines:**
+      - Use model factories to create test data efficiently.
+      - Ensure all necessary `use` statements are present.
+
+      Provide the full PHP code for `backend/tests/Unit/ModelRelationshipsTest.php`.
+  backend:refactor-tests-unit:
+    prompt: |
+      As a Laravel developer, your task is to refactor existing unit tests to use model factories correctly and to improve assertion quality.
+
+      **Context Files:**
+      {{file "backend/tests/Unit/ModelRelationshipsTest.php"}}
+      {{file "backend/app/Models/TicketStatusChange.php"}}
+      {{file "backend/app/Models/Ticket.php"}}
+      {{file "backend/app/Models/User.php"}}
+      {{file "backend/app/Enums/TicketStatus.php"}}
+
+      **Tasks:**
+
+      **1. Create `TicketStatusChangeFactory.php`:**
+         - Create a new model factory at `backend/database/factories/TicketStatusChangeFactory.php`.
+         - The factory should be for the `TicketStatusChange` model.
+         - The `definition()` method should return sensible defaults:
+           - `ticket_id`: Should be associated with a `Ticket` factory.
+           - `old_status`: A random value from the `TicketStatus` enum.
+           - `new_status`: A random value from the `TicketStatus` enum.
+           - `changed_at`: Should use `now()`.
+
+      **2. Refactor `ModelRelationshipsTest.php`:**
+         - Modify the existing `backend/tests/Unit/ModelRelationshipsTest.php` file.
+         - **Use the new factory:** In the `test_ticket_has_many_status_changes` method, replace the `TicketStatusChange::create()` call with the new `TicketStatusChangeFactory`.
+         - **Improve `hasMany` assertions:**
+           - In `test_user_has_many_created_tickets`, after asserting the count, add an assertion to verify the inverse relationship. Iterate through the collection and check that each ticket's `creator` is the original user. Example: `$user->ticketsCreated->each(fn (Ticket $ticket) => $this->assertTrue($ticket->creator->is($user)));`
+           - In `test_user_has_many_assigned_tickets`, do the same for the `assignee` relationship. Example: `$user->ticketsAssigned->each(fn (Ticket $ticket) => $this->assertTrue($ticket->assignee->is($user)));`
+
+      Provide the full PHP code for the two new/modified files:
+      1. `backend/database/factories/TicketStatusChangeFactory.php`
+      2. `backend/tests/Unit/ModelRelationshipsTest.php`
