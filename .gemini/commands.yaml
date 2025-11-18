@@ -311,6 +311,7 @@ commands:
           - Assert the response status is `201 Created`.
           - Assert the response JSON structure contains the created ticket data.
           - Assert that the new ticket exists in the `tickets` table.
+          - Assert that the `tickets` table contains the correct `tags` data (using `json_encode`).
           - Assert that the `creator_id` on the created ticket matches the ID of `$this->reporter`.
 
       3.  **Test `GET /api/tickets/{id}` (Show):**
@@ -318,22 +319,119 @@ commands:
           - Create a ticket using its factory.
           - Send a `GET` request to `/api/tickets/{ticket_id}`.
           - Assert the response status is `200 OK`.
-          - Assert the response JSON contains the correct ticket data (e.g., `data.title`).
+          - Assert the response JSON contains the correct ticket data (e.g., `data.title`) and the eager-loaded `assignee` relationship.
 
       4.  **Test `PUT /api/tickets/{id}` (Update):**
           - Write a test method `test_it_can_update_a_ticket()`.
           - Create a ticket.
-          - Prepare an array with new data (e.g., a new `title` and `status`).
-          - Send a `PUT` request to `/api/tickets/{ticket_id}` with the new data.
+          - Prepare an array with new data (e.g., a new `title` and `status`, and `tags`).
+          - Send a `PUT` request to `/api/tickets/{ticket_id}` with the new data, including the `X-USER-ROLE` header set to `admin` (or any valid role).
           - Assert the response status is `200 OK`.
           - Assert the response JSON contains the updated data.
           - Assert the `tickets` table in the database reflects the update.
+          - Assert that the `tickets` table contains the correct `tags` data (using `json_encode`) if tags were updated.
 
       5.  **Test `DELETE /api/tickets/{id}` (Destroy):**
           - Write a test method `test_it_can_delete_a_ticket()`.
           - Create a ticket.
-          - Send a `DELETE` request to `/api/tickets/{ticket_id}`.
+          - Send a `DELETE` request to `/api/tickets/{ticket_id}`, including the `X-USER-ROLE` header set to `admin` (or any valid role).
           - Assert the response status is `204 No Content`.
           - Assert the ticket is missing from the `tickets` table (`assertDatabaseMissing`).
 
       Provide the full PHP code for `backend/tests/Feature/TicketCrudTest.php`.
+  backend:make-tests-feature-logic:
+    prompt: |
+      As a Laravel developer, your task is to create a feature test file to verify the key business logic of the tickets API, including filtering, authorization, and side effects.
+
+      **Context Files:**
+      {{file "backend/routes/api.php"}}
+      {{file "backend/app/Http/Controllers/TicketController.php"}}
+      {{file "backend/app/Models/User.php"}}
+      {{file "backend/app/Models/Ticket.php"}}
+      {{file "backend/app/Models/TicketStatusChange.php"}}
+      {{file "backend/database/factories/UserFactory.php"}}
+      {{file "backend/database/factories/TicketFactory.php"}}
+      {{file "backend/app/Enums/UserRole.php"}}
+      {{file "backend/app/Enums/TicketStatus.php"}}
+
+      You need to create a new PHPUnit test file: `backend/tests/Feature/TicketLogicTest.php`.
+
+      **Instructions:**
+
+      1.  **Test File Setup:**
+          - Create a test class `TicketLogicTest` that extends `Tests\TestCase`.
+          - Use the `RefreshDatabase` trait.
+          - In a `setUp()` method, create one user for each role (`admin`, `agent`, `reporter`) and store them as properties of the test class for easy access.
+
+      2.  **Test Filtering Logic (`index` endpoint):**
+          - Write a test method `test_it_filters_tickets_by_status()`.
+          - Create several tickets: two with `status: 'new'` and one with `status: 'in_progress'`.
+          - Send a `GET` request to `/api/tickets?status=new` with the `X-USER-ROLE` header set to `admin`.
+          - Assert the response status is `200 OK`.
+          - Assert that the response JSON contains exactly 2 items.
+          - Assert that the `id` of the 'in_progress' ticket is NOT present in the response.
+
+      3.  **Test Authorization Logic (`index` endpoint):**
+          - Write a test method `test_reporter_can_only_see_their_own_tickets()`.
+          - Create two reporter users, `$reporter1` and `$reporter2`.
+          - Create a ticket with `$reporter1` as the creator.
+          - Create a ticket with `$reporter2` as the creator.
+          - Send a `GET` request to `/api/tickets` with the `X-USER-ROLE` header set to `reporter`. **Important:** The controller logic currently finds the first user with the 'reporter' role. Ensure your test setup reflects this by making `$reporter1` the first one created.
+          - Assert the response status is `200 OK`.
+          - Assert the response JSON contains the ticket created by `$reporter1`.
+          - Assert the response JSON does NOT contain the ticket created by `$reporter2`.
+
+      4.  **Test Status Change Logging (`update` endpoint):**
+          - Write a test method `test_it_logs_status_change_on_update()`.
+          - Create a ticket with `status: 'new'`.
+          - Assert that the `ticket_status_changes` table is empty for this ticket's ID.
+          - Send a `PUT` request to `/api/tickets/{ticket_id}` with a new `status: 'in_progress'`.
+          - Assert the response status is `200 OK`.
+          - Assert that the `ticket_status_changes` table now has one record for this ticket.
+          - Assert that this new record has `old_status: 'new'` and `new_status: 'in_progress'`.
+
+      Provide the full PHP code for `backend/tests/Feature/TicketLogicTest.php`.
+  backend:make-tests-feature-extra:
+    prompt: |
+      As a Laravel developer, your task is to create a feature test file for the remaining, non-CRUD API endpoints, including mocking external services and testing cache behavior.
+
+      **Context Files:**
+      {{file "backend/routes/api.php"}}
+      {{file "backend/app/Http/Controllers/TicketController.php"}}
+      {{file "backend/app/Models/Ticket.php"}}
+      {{file "backend/database/factories/TicketFactory.php"}}
+
+      You need to create a new PHPUnit test file: `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+
+      **Instructions:**
+
+      1.  **Test File Setup:**
+          - Create a test class `ExtraApiEndpointsTest` that extends `Tests\TestCase`.
+          - Use the `RefreshDatabase` trait.
+
+      2.  **Test `triage-suggest` Endpoint:**
+          - Write a test method `test_triage_suggest_returns_correct_mock_response()`.
+          - Create a `Ticket` using its factory.
+          - Send a `POST` request to the `/api/tickets/{ticket}/triage-suggest` endpoint.
+          - Assert the response status is `200 OK`.
+          - Assert the response JSON exactly matches the expected mock structure: `{"suggested_status": "in_progress", "suggested_priority": "high", "suggested_tags": ["triage", "auto"]}`.
+
+      3.  **Test `external-user-info` Endpoint (Success & Caching):**
+          - Write a test method `test_external_user_info_returns_name_and_caches_response()`.
+          - Use `Http::fake()` to mock the external API. Define a fake response for `https://jsonplaceholder.typicode.com/users/1` that returns a `200` status and `['name' => 'Leanne Graham']`.
+          - **First call:** Send a `GET` request to `/api/external-user-info`.
+            - Assert status `200 OK`.
+            - Assert the response JSON is `['name' => 'Leanne Graham']`.
+            - Assert that the HTTP request was sent to the correct URL (`Http::assertSent(...)`).
+          - **Second call:** Send another `GET` request to the same endpoint.
+            - Assert status `200 OK`.
+          - **Verify Caching:** Assert that the HTTP request was only sent once in total (`Http::assertSentCount(1)`). This proves the cache is working.
+
+      4.  **Test `external-user-info` Endpoint (Failure):**
+          - Write a test method `test_external_user_info_handles_api_failure()`.
+          - Use `Http::fake()` to mock the external API, but this time return a `500` server error for the URL.
+          - Send a `GET` request to `/api/external-user-info`.
+          - Assert the response status is `502 Bad Gateway`.
+          - Assert the response JSON is `['error' => 'external_api_failed']`.
+
+      Provide the full PHP code for `backend/tests/Feature/ExtraApiEndpointsTest.php`.
