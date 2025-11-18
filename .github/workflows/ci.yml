@@ -20,8 +20,12 @@ jobs:
           php-version: '8.2'
       - name: Install Composer dependencies
         run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
       - name: Run backend tests
-        run: php artisan test --testsuite=Unit --testsuite=Feature || php artisan test
+        run: php artisan test
 
   frontend:
     runs-on: ubuntu-latest
