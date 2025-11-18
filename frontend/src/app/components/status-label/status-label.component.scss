@@ -1,0 +1,29 @@
+@import '../../../styles/theme';
+
+.label {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.status-new {
+  color: $info-color;
+  border-color: lighten($info-color, 20%);
+  background-color: lighten($info-color, 40%);
+}
+
+.status-in_progress {
+  color: $accent-color;
+  border-color: lighten($accent-color, 10%);
+  background-color: lighten($accent-color, 40%);
+}
+
+.status-resolved {
+  color: $success-color;
+  border-color: lighten($success-color, 10%);
+  background-color: lighten($success-color, 45%);
+}

@@ -523,3 +523,41 @@ commands:
       Provide the full TypeScript code for:
       1. `frontend/src/app/interceptors/auth.interceptor.ts`
       2. `frontend/src/app/app.module.ts`
+  frontend:make-styles-and-presentational-components:
+    prompt: |
+      As an Angular developer, your task is to establish a basic theme file and create two simple, reusable presentational components: `PriorityBadge` and `StatusLabel`.
+
+      **Context Files:**
+      {{file "frontend/src/styles.scss"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+
+      **Instructions:**
+
+      **1. Create Theme File (`frontend/src/styles/_theme.scss`):**
+         - Create a new SCSS partial to hold theme variables.
+         - Content should include variables for primary, accent, warn, success, info, text, and background colors.
+
+      **2. Modify Global Styles (`frontend/src/styles.scss`):**
+         - Add an `@import` statement at the top of the file to include the new `_theme.scss`.
+
+      **3. Create `PriorityBadgeComponent` in `frontend/src/app/components/priority-badge/`:**
+         - **`priority-badge.component.ts`:**
+           - Create a component that takes one `@Input()`: `priority: TicketPriority`.
+         - **`priority-badge.component.html`:**
+           - A `<span>` that displays the priority value.
+           - Use `[ngClass]` to apply a dynamic class based on the priority (e.g., `'priority-low'`, `'priority-medium'`).
+         - **`priority-badge.component.scss`:**
+           - Define styles for a base `.badge` class (padding, border-radius).
+           - Define modifier classes `.priority-low`, `.priority-medium`, `.priority-high` with distinct background colors using variables from `_theme.scss`.
+
+      **4. Create `StatusLabelComponent` in `frontend/src/app/components/status-label/`:**
+         - **`status-label.component.ts`:**
+           - Create a component that takes one `@Input()`: `status: TicketStatus`.
+         - **`status-label.component.html`:**
+           - A `<span>` that displays the status value.
+           - Use `[ngClass]` to apply a dynamic class based on the status (e.g., `'status-new'`, `'status-in_progress'`).
+         - **`status-label.component.scss`:**
+           - Define styles for a base `.label` class.
+           - Define modifier classes `.status-new`, `.status-in_progress`, `.status-resolved` with distinct text or background colors.
+
+      Provide the full code for all new and modified files.
