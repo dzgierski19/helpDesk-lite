@@ -292,6 +292,53 @@ Provide the full PHP code for `backend/tests/Feature/TicketLogicTest.php`.
 
 """
 
+[commands."backend:make-tests-feature-services"]
+prompt = """
+As a Laravel developer, your task is to create a feature test file for the remaining, non-CRUD API endpoints, including mocking external services and testing cache behavior.
+
+**Context Files:**
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `ExtraApiEndpointsTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait.
+
+2.  **Test `triage-suggest` Endpoint:**
+    - Write a test method `test_triage_suggest_returns_correct_mock_response()`.
+    - Create a `Ticket` using its factory.
+    - Send a `POST` request to the `/api/tickets/{ticket}/triage-suggest` endpoint.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON exactly matches the expected mock structure: `{"suggested_status": "in_progress", "suggested_priority": "high", "suggested_tags": ["triage", "auto"]}`.
+
+3.  **Test `external-user-info` Endpoint (Success & Caching):**
+    - Write a test method `test_external_user_info_returns_name_and_caches_response()`.
+    - Use `Http::fake()` to mock the external API. Define a fake response for `https://jsonplaceholder.typicode.com/users/1` that returns a `200` status and `['name' => 'Leanne Graham']`.
+    - **First call:** Send a `GET` request to `/api/external-user-info`.
+      - Assert status `200 OK`.
+      - Assert the response JSON is `['name' => 'Leanne Graham']`.
+      - Assert that the HTTP request was sent to the correct URL (`Http::assertSent(...)`).
+    - **Second call:** Send another `GET` request to the same endpoint.
+      - Assert status `200 OK`.
+    - **Verify Caching:** Assert that the HTTP request was only sent once in total (`Http::assertSentCount(1)`). This proves the cache is working.
+
+4.  **Test `external-user-info` Endpoint (Failure):**
+    - Write a test method `test_external_user_info_handles_api_failure()`.
+    - Use `Http::fake()` to mock the external API, but this time return a `500` server error for the URL.
+    - Send a `GET` request to `/api/external-user-info`.
+    - Assert the response status is `502 Bad Gateway`.
+    - Assert the response JSON is `['error' => 'external_api_failed']`.
+
+Provide the full PHP code for `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+
+"""
+
 [commands."backend:make-tests-unit"]
 prompt = """
 As a Laravel developer, your task is to create unit tests for the Eloquent model relationships based on the provided `project_spec.md` and the existing model and enum files.

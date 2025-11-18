@@ -391,7 +391,7 @@ commands:
           - Assert that this new record has `old_status: 'new'` and `new_status: 'in_progress'`.
 
       Provide the full PHP code for `backend/tests/Feature/TicketLogicTest.php`.
-  backend:make-tests-feature-extra:
+  backend:make-tests-feature-services:
     prompt: |
       As a Laravel developer, your task is to create a feature test file for the remaining, non-CRUD API endpoints, including mocking external services and testing cache behavior.
 
