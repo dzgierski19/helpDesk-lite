@@ -589,3 +589,41 @@ commands:
            - Use flexbox for layout and add some margin between the buttons.
 
       Provide the full code for all three new files: `login.component.ts`, `login.component.html`, and `login.component.scss`.
+  frontend:make-ticket-list-component:
+    prompt: |
+      As an Angular developer, your task is to create a `TicketListComponent` that displays a list of tickets using an Angular Material table. The columns displayed should be dynamic based on the user's role.
+
+      **Context Files:**
+      {{file "frontend/src/app/services/ticket.service.ts"}}
+      {{file "frontend/src/app/services/auth.service.ts"}}
+      {{file "frontend/src/app/models/ticket.model.ts"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+      {{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+      {{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+
+      **Instructions:**
+
+      **1. Create `TicketListComponent` in `frontend/src/app/components/ticket-list/`:**
+         - **`ticket-list.component.ts`:**
+           - Inject `TicketService`, `AuthService`, and `Router`.
+           - Define a public property `tickets$: Observable<Ticket[]>`.
+           - Define a public property `displayedColumns: string[] = []`.
+           - In `ngOnInit`:
+             - Get the current user's role from `AuthService`.
+             - Based on the role, set the `displayedColumns` array:
+               - For `UserRole.Reporter`: `['id', 'title', 'status', 'priority', 'created_at']`
+               - For `UserRole.Agent` or `UserRole.Admin`: `['id', 'title', 'status', 'priority', 'assignee_id', 'created_at', 'actions']`
+             - Fetch the tickets by calling `this.ticketService.getTickets()` and assign the result to `tickets$`.
+           - Create a method `viewTicket(id: number)` that navigates to `/tickets/{id}`.
+
+         - **`ticket-list.component.html`:**
+           - Use a `mat-table` to display the tickets from the `tickets$` observable.
+           - Define the table columns using `ng-container` for each column name specified in `displayedColumns`.
+           - For the `status` column, use the `app-status-label` component.
+           - For the `priority` column, use the `app-priority-badge` component.
+           - For the `actions` column, add a `mat-icon-button` with a 'visibility' icon that calls `viewTicket(ticket.id)` on click.
+
+         - **`ticket-list.component.scss`:**
+           - Add basic styling to ensure the table takes up the full width.
+
+      Provide the full code for all three new files: `ticket-list.component.ts`, `ticket-list.component.html`, and `ticket-list.component.scss`.
