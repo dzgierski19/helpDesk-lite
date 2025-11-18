@@ -1,6 +1,65 @@
 # Auto-generated from .gemini/commands.yaml
 # Run `npm run sync:commands` after editing Gemini slash commands.
 
+[commands."backend:make-controllers"]
+prompt = """
+As a Laravel developer, your task is to generate the necessary API routes and a controller based on the provided `project_spec.md`, existing Enum files, and Model files.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+
+You need to create a `TicketController.php` and modify `api.php` to define the API endpoints.
+
+**1. Create `TicketController.php` (`backend/app/Http/Controllers/TicketController.php`):**
+   - Implement methods for all CRUD operations for tickets (`index`, `store`, `show`, `update`, `destroy`).
+   - Implement `triageSuggest(Request $request, Ticket $ticket)` method.
+   - Implement `externalUserInfo()` method.
+
+   **Specific Logic for Controller Methods:**
+   - **`index(Request $request)`:**
+     - Retrieve tickets, applying filters by `status`, `priority`, `assignee_id`, and `tag` from the request query parameters.
+     - **Authorization Logic:** If the `X-USER-ROLE` header is 'reporter', filter tickets to show only those where `creator_id` matches the ID of the reporter user (assume reporter user ID is 3, as per our seeding plan). Otherwise, return all tickets.
+     - Return tickets as a JSON response.
+   - **`store(Request $request)`:**
+     - Validate incoming request data for `title`, `description`, `priority`, `status`, `assignee_id`, `tags`.
+     - Create a new `Ticket` instance.
+     - Set `creator_id` based on the `X-USER-ROLE` header (assume reporter user ID is 3).
+     - Return the created ticket as a JSON response.
+   - **`show(Ticket $ticket)`:**
+     - Return the specified `Ticket` instance.
+     - Ensure the `assignee` relationship is loaded (e.g., `Ticket::with('assignee')->findOrFail($id)`).
+   - **`update(Request $request, Ticket $ticket)`:**
+     - Validate incoming request data.
+     - If the `status` field is being updated and its value changes, create a new `TicketStatusChange` record.
+     - Update the `Ticket` instance.
+     - Return the updated ticket as a JSON response.
+   - **`destroy(Ticket $ticket)`:**
+     - Delete the specified `Ticket` instance.
+     - Return a success response (e.g., 204 No Content).
+   - **`triageSuggest(Request $request, Ticket $ticket)`:**
+     - Return the hardcoded JSON response as specified in `project_spec.md`: `{"suggested_status": "in_progress", "suggested_priority": "high", "suggested_tags": ["triage", "auto"]}`.
+   - **`externalUserInfo()`:**
+     - Make an HTTP GET request to `https://jsonplaceholder.typicode.com/users/1`.
+     - Cache the response for 10 minutes.
+     - Extract and return only the `name` from the external API response.
+     - Handle potential HTTP request errors (e.g., network issues, API down) by returning `{"error": "external_api_failed"}`.
+
+**2. Modify `api.php` (`backend/routes/api.php`):**
+   - Define API routes for all methods in `TicketController`.
+   - Use `Route::apiResource` for the standard CRUD operations.
+   - Define specific routes for `POST /tickets/{id}/triage-suggest` and `GET /external/user-info`.
+   - Ensure routes are accessible without explicit authentication middleware for now, as per `project_spec.md` (fake login).
+
+Provide the full PHP code for `backend/app/Http/Controllers/TicketController.php` and `backend/routes/api.php`.
+
+"""
+
 [commands."backend:make-migrations"]
 prompt = """
 As a Laravel developer, your task is to generate the necessary database migration files based on the provided `project_spec.md`.
@@ -115,5 +174,40 @@ Your task is to populate the `run` method of the main `DatabaseSeeder.php` file.
     - Do not add any logic to truncate or refresh the database; just the creation logic.
 
 Provide the full, updated PHP code for the `backend/database/seeders/DatabaseSeeder.php` file.
+
+"""
+
+[commands."backend:refactor-controller"]
+prompt = """
+As a Laravel developer, your task is to refactor the existing `TicketController.php` to eliminate hard-coded user IDs and replace them with a dynamic, database-driven approach.
+
+**Context Files:**
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Enums/UserRole.php"}}
+
+**Problem:**
+The current `TicketController.php` uses a hard-coded constant `REPORTER_USER_ID` and a `resolveCreatorId` method with hard-coded IDs (1, 2, 3). This is brittle and will break if the database seed order changes.
+
+**Refactoring Instructions:**
+
+1.  **Remove Hard-Coded Logic:**
+    - Delete the `private const REPORTER_USER_ID = 3;` constant.
+    - Delete the `private function resolveCreatorId(...)` method.
+
+2.  **Create a Dynamic Helper Method:**
+    - Create a new private helper method, for example, `getUserIdByRole(UserRole $role): ?int`.
+    - This method should accept a `UserRole` enum case.
+    - It should query the `users` table to find the ID of the first user with that role (e.g., `User::where('role', $role)->value('id')`).
+    - **Important:** Cache the result of this query for 1 minute to improve performance and avoid hitting the database on every request for the same role. The cache key should be dynamic based on the role (e.g., `user_id_for_role_{$role->value}`).
+
+3.  **Update the `index` Method:**
+    - In the authorization logic for reporters, replace the hard-coded ID with a call to your new helper method: `$query->where('creator_id', $this->getUserIdByRole(UserRole::Reporter));`.
+
+4.  **Update the `store` Method:**
+    - In the logic for setting `creator_id`, replace the call to `resolveCreatorId`.
+    - The `creator_id` should be determined by finding the user ID for the 'reporter' role. For this MVP, we can assume the creator is always the main reporter. Use your new helper method: `$this->getUserIdByRole(UserRole::Reporter)`.
+
+Provide the full, refactored PHP code for the `backend/app/Http/Controllers/TicketController.php` file.
 
 """

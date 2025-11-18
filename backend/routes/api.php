@@ -1,15 +1,10 @@
 <?php
 
+use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('tickets')->group(function () {
-    // TODO: implement /tickets CRUD routes
-});
+Route::apiResource('tickets', TicketController::class);
 
-Route::get('tickets/{id}/triage-suggest', function () {
-    // TODO: implement /tickets/{id}/triage-suggest handler
-});
+Route::post('tickets/{ticket}/triage-suggest', [TicketController::class, 'triageSuggest']);
 
-Route::get('external/user-info', function () {
-    // TODO: implement /external/user-info handler
-});
+Route::get('external/user-info', [TicketController::class, 'externalUserInfo']);
