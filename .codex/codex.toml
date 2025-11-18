@@ -467,6 +467,37 @@ Provide the full PHP code for the two new/modified files:
 
 """
 
+[commands."frontend:make-interceptor"]
+prompt = """
+As an an Angular developer, your task is to create an HTTP Interceptor that automatically adds the `X-USER-ROLE` header to outgoing API requests, based on the currently selected role from the `AuthService`. You also need to register this interceptor in `app.module.ts`.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/app.module.ts"}}
+
+**Instructions:**
+
+**1. Create `AuthInterceptor` in `frontend/src/app/interceptors/auth.interceptor.ts`:**
+   - Create an injectable Angular interceptor (`@Injectable()`).
+   - Inject `AuthService`.
+   - Implement the `HttpInterceptor` interface.
+   - In the `intercept` method:
+     - Retrieve the current user role using `this.authService.getSnapshotUserRole()`.
+     - If a role is available (not null), clone the incoming `HttpRequest` and add an `X-USER-ROLE` header with the value of the current role.
+     - If no role is available, proceed with the original request.
+     - Return `next.handle(modifiedRequest)`.
+
+**2. Register `AuthInterceptor` in `frontend/src/app/app.module.ts`:**
+   - Import `AuthInterceptor` and `HTTP_INTERCEPTORS` from `@angular/common/http`.
+   - Add the `AuthInterceptor` to the `providers` array. Ensure it's provided with `multi: true`.
+
+Provide the full TypeScript code for:
+1. `frontend/src/app/interceptors/auth.interceptor.ts`
+2. `frontend/src/app/app.module.ts`
+
+"""
+
 [commands."frontend:make-services"]
 prompt = """
 As an Angular developer, your task is to create data services and TypeScript interfaces/models for the frontend application, mirroring the backend data structures and API endpoints.
