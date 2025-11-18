@@ -435,3 +435,63 @@ commands:
           - Assert the response JSON is `['error' => 'external_api_failed']`.
 
       Provide the full PHP code for `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+  frontend:make-services:
+    prompt: |
+      As an Angular developer, your task is to create data services and TypeScript interfaces/models for the frontend application, mirroring the backend data structures and API endpoints.
+
+      **Context Files (for backend data structure reference):**
+      {{file "project_spec.md"}}
+      {{file "backend/app/Enums/UserRole.php"}}
+      {{file "backend/app/Enums/TicketPriority.php"}}
+      {{file "backend/app/Enums/TicketStatus.php"}}
+      {{file "backend/app/Models/User.php"}}
+      {{file "backend/app/Models/Ticket.php"}}
+      {{file "backend/app/Models/TicketStatusChange.php"}}
+
+      **Instructions:**
+
+      **1. Create Interfaces/Models in `frontend/src/app/models/`:**
+         - **`frontend/src/app/models/user.model.ts`:**
+           - Define a TypeScript interface `User` with properties: `id: number`, `name: string`, `email: string`, `role: UserRole`.
+         - **`frontend/src/app/models/ticket.model.ts`:**
+           - Define a TypeScript interface `Ticket` with properties: `id: number`, `title: string`, `description: string`, `priority: TicketPriority`, `status: TicketStatus`, `assignee_id: number | null`, `creator_id: number`, `tags: string[]`, `created_at: string`, `updated_at: string`.
+         - **`frontend/src/app/models/ticket-status-change.model.ts`:**
+           - Define a TypeScript interface `TicketStatusChange` with properties: `id: number`, `ticket_id: number`, `old_status: TicketStatus`, `new_status: TicketStatus`, `changed_at: string`.
+         - **`frontend/src/app/models/enums.ts`:**
+           - Define TypeScript enums `UserRole`, `TicketPriority`, `TicketStatus` that mirror the values from the corresponding PHP enums in the backend.
+
+      **2. Create `AuthService` in `frontend/src/app/services/auth.service.ts`:**
+         - Create an injectable Angular service (`@Injectable()`).
+         - It should manage the currently "logged in" user's role. Use a `BehaviorSubject<UserRole | null>` named `currentUserRole$` to hold the current role, initialized to `null`.
+         - **Implement `localStorage` persistence:**
+           - On service initialization, attempt to load the role from `localStorage`.
+           - In `login(role: UserRole)`, store the role in `localStorage`.
+           - In `logout()`, remove the role from `localStorage`.
+         - Provide methods:
+           - `login(role: UserRole): void`: Sets the `currentUserRole$` to the provided role and stores it in `localStorage`.
+           - `logout(): void`: Sets `currentUserRole$` to `null` and removes the role from `localStorage`.
+           - `getCurrentUserRole(): Observable<UserRole | null>`: Returns `currentUserRole$`.
+           - `getSnapshotUserRole(): UserRole | null`: Returns the current value of `currentUserRole$`.
+
+      **3. Create `TicketService` in `frontend/src/app/services/ticket.service.ts`:**
+         - Create an injectable Angular service (`@Injectable()`).
+         - Inject `HttpClient` and `AuthService`.
+         - Define a `private apiUrl = '/api';`.
+         - Implement the following methods, making HTTP requests to the backend API and returning `Observable`s:
+           - `getTickets(filters?: { status?: TicketStatus, priority?: TicketPriority, assignee_id?: number, tag?: string }): Observable<Ticket[]>` (GET /api/tickets)
+             - Construct query parameters from `filters`.
+             - Add `X-USER-ROLE` header using `AuthService.getSnapshotUserRole()`.
+           - `getTicket(id: number): Observable<Ticket>` (GET /api/tickets/{id})
+             - Add `X-USER-ROLE` header.
+           - `createTicket(ticket: Partial<Ticket>): Observable<Ticket>` (POST /api/tickets)
+             - Add `X-USER-ROLE` header.
+           - `updateTicket(id: number, ticket: Partial<Ticket>): Observable<Ticket>` (PUT /api/tickets/{id})
+             - Add `X-USER-ROLE` header.
+           - `deleteTicket(id: number): Observable<void>` (DELETE /api/tickets/{id})
+             - Add `X-USER-ROLE` header.
+           - `getTriageSuggestion(id: number): Observable<{ suggested_status: TicketStatus, suggested_priority: TicketPriority, suggested_tags: string[] }>` (POST /api/tickets/{id}/triage-suggest)
+             - Add `X-USER-ROLE` header.
+           - `getExternalUserInfo(): Observable<{ name: string }>` (GET /api/external/user-info)
+             - Add `X-USER-ROLE` header.
+
+      Provide the full TypeScript code for all the files mentioned above.
