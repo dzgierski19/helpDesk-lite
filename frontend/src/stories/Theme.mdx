@@ -1,27 +1,55 @@
-import { Meta, ColorPalette, ColorItem } from '@storybook/blocks';
+import { Meta } from '@storybook/angular';
+import { Title, Subtitle, Description, ColorPalette, ColorItem, Heading } from '@storybook/blocks';
+import { themeColors } from './theme-tokens';
 
-<Meta title="Design System/Theme" />
+export const meta = {
+  title: 'Design System/Theme',
+  tags: ['docs'],
+};
 
-# Theme Documentation
+<Meta of={meta} />
 
-## Color Palette
+<Title>Helpdesk Design Theme</Title>
+<Subtitle>Colors, typography, and reusable styling decisions that shape the Helpdesk UI.</Subtitle>
+<Description>
+  Use this guide to preview the foundational palette and baseline typography. Keep the Sass tokens in `_theme.scss`
+  aligned with this reference so Storybook stories match the live application.
+</Description>
+
+<Heading level={2}>Color Palette</Heading>
 
 <ColorPalette>
-  <ColorItem title="Primary" subtitle="$primary-color" colors={{ Primary: '#3f51b5' }} />
-  <ColorItem title="Accent" subtitle="$accent-color" colors={{ Accent: '#ff4081' }} />
-  <ColorItem title="Warn" subtitle="$warn-color" colors={{ Warn: '#f44336' }} />
-  <ColorItem title="Success" subtitle="$success-color" colors={{ Success: '#4caf50' }} />
-  <ColorItem title="Info" subtitle="$info-color" colors={{ Info: '#2196f3' }} />
-  <ColorItem title="Text" subtitle="$text-color" colors={{ Text: '#212121' }} />
-  <ColorItem title="Background" subtitle="$background-color" colors={{ Background: '#f5f5f5' }} />
+  {themeColors.map(({ title, token, cssVar, hex, description }) => (
+    <ColorItem
+      key={title}
+      title={title}
+      subtitle={`${token} / ${cssVar}`}
+      colors={[{ name: 'Base', value: hex, description }]}
+    />
+  ))}
 </ColorPalette>
 
-## Typography
+<Heading level={2}>Typography</Heading>
 
-```html
-<h1>Heading 1</h1>
-<h2>Heading 2</h2>
-<h3>Heading 3</h3>
-<p>This is a paragraph of text. It is used for long-form content. <strong>This text is bold.</strong> <em>This text is italic.</em></p>
-<a>This is a link.</a>
-```
+<Description>
+  The application uses the default Angular Material typographic scale mapped to the Roboto font stack. Use the hierarchy
+  below when composing cards, tables, and detail views.
+</Description>
+
+<section>
+  <h1>Heading 1 – Page title</h1>
+  <p>Use sparingly for main views like the dashboard or ticket list.</p>
+
+  <h2>Heading 2 – Section title</h2>
+  <p>Great for card headers and grouped information inside detail views.</p>
+
+  <h3>Heading 3 – Subsection</h3>
+  <p>Helpful when you need one more layer of hierarchy within cards or panels.</p>
+
+  <p>
+    Body text defaults to 16px with a 1.5 line-height. Use it for descriptions, comments, and supporting
+    context. Keep paragraphs short for readability.
+  </p>
+
+  <small>Caption text communicates metadata like timestamps or helper labels.</small>
+</section>

@@ -887,6 +887,68 @@ Provide the full TypeScript code for all the files mentioned above.
 
 """
 
+[commands."frontend:make-storybook-coverage"]
+prompt = """
+As an Angular developer, your task is to create a comprehensive set of Storybook stories for all major shared and presentational components to ensure full visual test coverage. You will also create a theme documentation page.
+
+**Context Files:**
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+{{file "frontend/src/app/components/loader/loader.component.ts"}}
+{{file "frontend/src/styles/_theme.scss"}}
+{{file "frontend/.storybook/main.ts"}}
+
+**Instructions:**
+
+**1. Verify Storybook Configuration:**
+   - Check `frontend/.storybook/main.ts`. Ensure the `stories` array includes the glob pattern `'../src/**/*.stories.@(js|jsx|mjs|ts|tsx|mdx)'`. If not, add it.
+
+**2. Create Theme Documentation (`frontend/src/stories/Theme.mdx`):**
+   - Create a new MDX file to document the design system.
+   - Include a `<Meta title="Design System/Theme" />` block.
+   - Use `@storybook/blocks`'s `ColorPalette` and `ColorItem` to display the primary, accent, warn, success, and info colors from `_theme.scss`.
+   - Add a section for typography with examples of `<h1>`, `<h2>`, `<p>`, etc.
+
+**3. Create/Update Component Stories:**
+   - For each component below, create a `.stories.ts` file next to the component file.
+   - Use `moduleMetadata` to import any necessary Angular modules (e.g., `MatCardModule`, `MatChipsModule`, `RouterTestingModule`, `ReactiveFormsModule`).
+   - Use realistic mock data based on the `Ticket` and `User` models.
+   - Use `argTypes` to create interactive controls for `@Input` properties.
+
+   - **`PriorityBadgeComponent` & `StatusLabelComponent`:**
+     - Create stories for each state (`low`/`medium`/`high` and `new`/`in_progress`/`resolved`).
+
+   - **`LoaderComponent`:**
+     - Create two stories: `Visible` and `Hidden`.
+     - You will need to mock the `UiService` and control its `loading$` observable to achieve this.
+
+   - **`TicketCardComponent`:**
+     - Create stories for different user roles (`Reporter` vs. `Agent`) to test conditional display of `assignee_id`.
+     - Create a story with a long description to verify truncation.
+
+   - **`TicketListComponent` (Container):**
+     - Create stories that mock the `tickets$` observable input.
+     - `Default`: Show a list of several tickets.
+     - `Loading`: Show a loading state (mock `isLoading$ | async` as true).
+     - `Empty`: Show the "No tickets found" message by providing an empty array to `tickets$`.
+     - `WithFilters`: Show the component with the filter form.
+
+   - **`TicketDetailsComponent` (Container):**
+     - Create stories that mock service dependencies (`TicketService`, `UiService`, `ActivatedRoute`).
+     - `Default`: Show a fully loaded ticket.
+     - `Loading`: Mock `ticket$` as an incomplete observable or use a loading flag.
+     - `NotFound`: Mock the service to return an error or `null`, and display the "Ticket not found" state.
+     - `WithTriageSuggestion`: Show the component after the "Suggest Triage" button has been clicked and a suggestion is visible.
+
+Provide the full, updated code for all new and modified files (`.ts`, `.mdx`).
+
+"""
+
 [commands."frontend:make-storybook-presentational-stories"]
 prompt = """
 As an Angular developer, your task is to create Storybook stories for the `PriorityBadgeComponent` and `StatusLabelComponent`. These stories should demonstrate the components with different input values and provide interactive controls.

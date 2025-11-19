@@ -6,6 +6,16 @@ $info-color: #2196f3;
 $text-color: #212121;
 $background-color: #f5f5f5;
 
+:root {
+  --color-primary: #{$primary-color};
+  --color-accent: #{$accent-color};
+  --color-warn: #{$warn-color};
+  --color-success: #{$success-color};
+  --color-info: #{$info-color};
+  --color-text: #{$text-color};
+  --color-background: #{$background-color};
+}
+
 $breakpoints: (
   mobile: 768px,
 );

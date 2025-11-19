@@ -38,10 +38,12 @@ yarn-error.log
 /dist
 /.angular/cache
 /coverage
+/frontend/test-results
+/frontend/storybook-static
 npm-debug.log
 yarn-error.log
 
 # LLM/Gemini specific ignores
 # Ignore contents of the LLM notes directory, but keep the directory itself
-/notes/llm/*
+
 !/notes/llm/.gitkeep

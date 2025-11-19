@@ -2,8 +2,6 @@ import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-
 import { TicketCardComponent } from './ticket-card.component';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
@@ -17,7 +15,7 @@ const meta: Meta<TicketCardComponent> = {
   decorators: [
     moduleMetadata({
       declarations: [TicketCardComponent, PriorityBadgeComponent, StatusLabelComponent],
-      imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
+      imports: [CommonModule, MatCardModule, MatButtonModule],
     }),
   ],
   argTypes: {
@@ -52,39 +50,27 @@ const baseTicket: Ticket = {
   updated_at: '2024-05-10T11:30:00.000Z',
 };
 
-export const Default: Story = {
+export const ReporterView: Story = {
   args: {
-    ticket: { ...baseTicket },
+    ticket: {
+      ...baseTicket,
+      id: 1042,
+      assignee_id: null,
+    },
     userRole: UserRole.Reporter,
   },
 };
 
-export const AssignedTicketForAgent: Story = {
+export const AgentViewAssigned: Story = {
   args: {
     ticket: {
       ...baseTicket,
       id: 2044,
       title: 'Customer cannot upload attachments',
-      assignee_id: 12,
       status: TicketStatus.InProgress,
+      assignee_id: 18,
     },
     userRole: UserRole.Agent,
-  },
-};
-
-export const HighPriorityInProgress: Story = {
-  args: {
-    ticket: {
-      ...baseTicket,
-      id: 3055,
-      title: 'Production outage in EU region',
-      description:
-        'Multiple customers report downtime in the EU region. API requests consistently fail with 502 errors.',
-      priority: TicketPriority.High,
-      status: TicketStatus.InProgress,
-      assignee_id: 3,
-    },
-    userRole: UserRole.Admin,
   },
 };
 
@@ -102,5 +88,21 @@ export const LongDescription: Story = {
       status: TicketStatus.New,
     },
     userRole: UserRole.Reporter,
+  },
+};
+
+export const AdminHighPriority: Story = {
+  args: {
+    ticket: {
+      ...baseTicket,
+      id: 3055,
+      title: 'Production outage in EU region',
+      description:
+        'Multiple customers report downtime in the EU region. API requests consistently fail with 502 errors.',
+      priority: TicketPriority.High,
+      status: TicketStatus.InProgress,
+      assignee_id: 3,
+    },
+    userRole: UserRole.Admin,
   },
 };

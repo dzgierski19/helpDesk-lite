@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
+import { CommonModule } from '@angular/common';
 import { StatusLabelComponent } from './status-label.component';
 import { TicketStatus } from '../../models/enums';
 
@@ -6,6 +7,12 @@ const meta: Meta<StatusLabelComponent> = {
   component: StatusLabelComponent,
   title: 'Components/StatusLabel',
   tags: ['autodocs'],
+  decorators: [
+    moduleMetadata({
+      declarations: [StatusLabelComponent],
+      imports: [CommonModule],
+    }),
+  ],
   argTypes: {
     status: {
       control: { type: 'select' },
