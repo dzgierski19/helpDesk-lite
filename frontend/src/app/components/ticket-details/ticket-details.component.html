@@ -23,9 +23,9 @@
 
       <div class="ticket-section">
         <h3>Tags</h3>
-        <mat-chip-list *ngIf="ticket.tags?.length; else noTags">
+        <mat-chip-set *ngIf="ticket.tags?.length; else noTags">
           <mat-chip *ngFor="let tag of ticket.tags">{{ tag }}</mat-chip>
-        </mat-chip-list>
+        </mat-chip-set>
         <ng-template #noTags>No tags</ng-template>
       </div>
 
@@ -47,9 +47,9 @@
               </div>
               <div class="suggested-tags">
                 <strong>Tags:</strong>
-                <mat-chip-list *ngIf="suggestion.suggested_tags.length; else noSuggestedTags">
+                <mat-chip-set *ngIf="suggestion.suggested_tags.length; else noSuggestedTags">
                   <mat-chip *ngFor="let tag of suggestion.suggested_tags">{{ tag }}</mat-chip>
-                </mat-chip-list>
+                </mat-chip-set>
                 <ng-template #noSuggestedTags>None</ng-template>
               </div>
             </div>
