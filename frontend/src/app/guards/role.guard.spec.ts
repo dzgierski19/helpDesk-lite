@@ -1,4 +1,6 @@
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+
 import { RoleGuard } from './role.guard';
 import { AuthService } from '../services/auth.service';
 import { UserRole } from '../models/enums';
@@ -7,28 +9,31 @@ describe('RoleGuard', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['getSnapshotUserRole']);
+    authService = jasmine.createSpyObj('AuthService', ['getSnapshotUserRole']);
+
     TestBed.configureTestingModule({
       providers: [{ provide: AuthService, useValue: authService }],
     });
   });
 
-  const runGuard = (roles: UserRole[]) =>
-    TestBed.runInInjectionContext(() => RoleGuard({ data: { roles } } as any, {} as any));
+  const executeGuard = (route: Partial<ActivatedRouteSnapshot>) =>
+    TestBed.runInInjectionContext(() => RoleGuard(route as ActivatedRouteSnapshot, {} as any));
 
-  it('should allow when role is permitted', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Agent);
-    const result = runGuard([UserRole.Agent, UserRole.Admin]);
+  it('should allow activation when user role is in the allowed list', () => {
+    authService.getSnapshotUserRole.and.returnValue(UserRole.Admin);
+    const route = { data: { roles: [UserRole.Admin, UserRole.Agent] } };
+
+    const result = executeGuard(route);
+
     expect(result).toBeTrue();
   });
 
-  it('should deny when no role or not permitted', () => {
-    authService.getSnapshotUserRole.and.returnValue(null);
-    let result = runGuard([UserRole.Admin]);
-    expect(result).toBeFalse();
-
+  it('should deny activation when user role is not in the allowed list', () => {
     authService.getSnapshotUserRole.and.returnValue(UserRole.Reporter);
-    result = runGuard([UserRole.Admin]);
+    const route = { data: { roles: [UserRole.Admin, UserRole.Agent] } };
+
+    const result = executeGuard(route);
+
     expect(result).toBeFalse();
   });
 });
