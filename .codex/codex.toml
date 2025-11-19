@@ -498,6 +498,37 @@ Provide the full TypeScript code for:
 
 """
 
+[commands."frontend:make-loader-interceptor"]
+prompt = """
+As an Angular developer, your task is to create an HTTP interceptor that automatically manages the global loading state and displays error notifications using the previously created `UiService`.
+
+**Context Files:**
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/app.module.ts"}}
+
+**Instructions:**
+
+**1. Create `LoaderInterceptor` (`frontend/src/app/interceptors/loader.interceptor.ts`):**
+   - Create an injectable class (`@Injectable()`) that implements `HttpInterceptor`.
+   - Inject `UiService`.
+   - Implement the `intercept(request: HttpRequest<any>, next: HttpHandler)` method:
+     - Call `this.uiService.showLoader()` before handling the request.
+     - Return `next.handle(request).pipe(...)`:
+       - Use `finalize(() => this.uiService.hideLoader())` to hide the loader when the request completes (success or error).
+       - Use `catchError((error: HttpErrorResponse) => { ... })` to handle HTTP errors:
+         - Construct an error message (e.g., `Wystąpił błąd: ${error.error?.message || error.message}`).
+         - Call `this.uiService.showSnackbar(errorMessage)`.
+         - Re-throw the error using `return throwError(() => error)`.
+     - Ensure necessary imports (`HttpRequest`, `HttpHandler`, `HttpEvent`, `Observable`, `finalize`, `catchError`, `throwError`, `HttpErrorResponse`) are present.
+
+**2. Modify `app.module.ts` (`frontend/src/app/app.module.ts`):**
+   - Import `LoaderInterceptor` and `HTTP_INTERCEPTORS` from `@angular/common/http`.
+   - Add `LoaderInterceptor` to the `providers` array, ensuring it is provided with `multi: true`.
+
+Provide the full TypeScript code for the new `loader.interceptor.ts` file and the modified `app.module.ts` file.
+
+"""
+
 [commands."frontend:make-login-component"]
 prompt = """
 As an Angular developer, your task is to create a `LoginComponent`. This component will serve as a "fake login" screen where the user can select their role.
