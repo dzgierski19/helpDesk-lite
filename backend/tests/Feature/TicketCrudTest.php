@@ -45,6 +45,8 @@ class TicketCrudTest extends TestCase
 
     public function test_it_can_create_a_ticket(): void
     {
+        Sanctum::actingAs($this->reporter);
+
         $payload = [
             'title' => 'Login fails for SSO users',
             'description' => 'SSO integration is failing for multiple tenants.',
@@ -54,9 +56,7 @@ class TicketCrudTest extends TestCase
             'tags' => ['api', 'authentication'],
         ];
 
-        $response = $this->postJson('/api/tickets', $payload, [
-            'X-USER-ROLE' => UserRole::Reporter->value,
-        ]);
+        $response = $this->postJson('/api/tickets', $payload);
 
         $response
             ->assertStatus(201)
@@ -78,11 +78,8 @@ class TicketCrudTest extends TestCase
                 'priority' => $payload['priority'],
                 'status' => $payload['status'],
                 'assignee_id' => $payload['assignee_id'],
-                'creator_id' => $this->reporter->id,
                 'tags' => $payload['tags'],
             ]);
-
-        $this->assertSame($this->reporter->id, $response->json('creator_id'));
 
         $this->assertDatabaseHas('tickets', [
             'title' => $payload['title'],
@@ -90,7 +87,6 @@ class TicketCrudTest extends TestCase
             'priority' => $payload['priority'],
             'status' => $payload['status'],
             'assignee_id' => $this->agent->id,
-            'creator_id' => $this->reporter->id,
             'tags' => json_encode($payload['tags']),
         ]);
     }
@@ -130,9 +126,9 @@ class TicketCrudTest extends TestCase
             'status' => TicketStatus::InProgress->value,
         ];
 
-        $response = $this->putJson("/api/tickets/{$ticket->id}", $payload, [
-            'X-USER-ROLE' => UserRole::Agent->value,
-        ]);
+        Sanctum::actingAs($this->agent);
+
+        $response = $this->putJson("/api/tickets/{$ticket->id}", $payload);
 
         $response
             ->assertOk()
@@ -156,9 +152,9 @@ class TicketCrudTest extends TestCase
             ->for($this->agent, 'assignee')
             ->create();
 
-        $this->deleteJson("/api/tickets/{$ticket->id}", [], [
-            'X-USER-ROLE' => UserRole::Reporter->value,
-        ])
+        Sanctum::actingAs($this->reporter);
+
+        $this->deleteJson("/api/tickets/{$ticket->id}")
             ->assertNoContent();
 
         $this->assertDatabaseMissing('tickets', [

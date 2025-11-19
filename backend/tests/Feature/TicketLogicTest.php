@@ -39,8 +39,7 @@ class TicketLogicTest extends TestCase
         $newTicketTwo = Ticket::factory()->create(['status' => TicketStatus::New]);
         $inProgressTicket = Ticket::factory()->create(['status' => TicketStatus::InProgress]);
 
-        $response = $this->withHeaders(['X-USER-ROLE' => UserRole::Admin->value])
-            ->getJson('/api/tickets?status=new');
+        $response = $this->getJson('/api/tickets?status=new');
 
         $response->assertOk();
         $response->assertJsonCount(2);
@@ -57,8 +56,9 @@ class TicketLogicTest extends TestCase
         $ticketForReporter1 = Ticket::factory()->create(['creator_id' => $reporter1->id]);
         $ticketForReporter2 = Ticket::factory()->create(['creator_id' => $reporter2->id]);
 
-        $response = $this->withHeaders(['X-USER-ROLE' => UserRole::Reporter->value])
-            ->getJson('/api/tickets');
+        Sanctum::actingAs($reporter1);
+
+        $response = $this->getJson('/api/tickets');
 
         $response->assertOk();
         $response->assertJsonFragment(['id' => $ticketForReporter1->id]);
@@ -71,10 +71,9 @@ class TicketLogicTest extends TestCase
 
         $this->assertDatabaseMissing('ticket_status_changes', ['ticket_id' => $ticket->id]);
 
-        $response = $this->withHeaders(['X-USER-ROLE' => UserRole::Admin->value])
-            ->putJson("/api/tickets/{$ticket->id}", [
-                'status' => TicketStatus::InProgress->value,
-            ]);
+        $response = $this->putJson("/api/tickets/{$ticket->id}", [
+            'status' => TicketStatus::InProgress->value,
+        ]);
 
         $response->assertOk();
 

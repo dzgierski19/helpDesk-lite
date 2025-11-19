@@ -39,7 +39,7 @@ class TicketController extends Controller
             $query->whereJsonContains('tags', $tag);
         }
 
-        if ($user && $user->role === UserRole::Reporter->value) {
+        if ($user && $user->role === UserRole::Reporter) {
             $query->where('creator_id', $user->id);
         }
 
