@@ -1,0 +1,59 @@
+.ticket-card {
+  margin: 1.5rem auto;
+  max-width: 800px;
+}
+
+.ticket-title,
+.ticket-subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ticket-description {
+  margin: 1rem 0;
+  white-space: pre-line;
+}
+
+.ticket-section {
+  margin-top: 1.5rem;
+}
+
+.ticket-meta {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.triage-section {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.suggestion-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.suggested-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.triage-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.actions {
+  margin: 0 auto 2rem;
+  max-width: 800px;
+  display: flex;
+  justify-content: flex-end;
+}

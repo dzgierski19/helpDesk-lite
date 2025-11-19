@@ -1,0 +1,86 @@
+<ng-container *ngIf="ticket$ | async as ticket; else noTicket">
+  <mat-card class="ticket-card">
+    <mat-card-title class="ticket-title">
+      <span>{{ ticket.title }}</span>
+      <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
+    </mat-card-title>
+    <mat-card-subtitle class="ticket-subtitle">
+      <app-status-label [status]="ticket.status"></app-status-label>
+      <span class="created-at">Created: {{ ticket.created_at | date: 'medium' }}</span>
+    </mat-card-subtitle>
+
+    <mat-card-content>
+      <p class="ticket-description">{{ ticket.description }}</p>
+
+      <div class="ticket-section">
+        <h3>Details</h3>
+        <div class="ticket-meta">
+          <div><strong>Assignee ID:</strong> {{ ticket.assignee_id || 'Unassigned' }}</div>
+          <div><strong>Creator ID:</strong> {{ ticket.creator_id }}</div>
+          <div>External User: {{ (externalUserInfo$ | async)?.name || 'N/A' }}</div>
+        </div>
+      </div>
+
+      <div class="ticket-section">
+        <h3>Tags</h3>
+        <mat-chip-list *ngIf="ticket.tags?.length; else noTags">
+          <mat-chip *ngFor="let tag of ticket.tags">{{ tag }}</mat-chip>
+        </mat-chip-list>
+        <ng-template #noTags>No tags</ng-template>
+      </div>
+
+      <ng-container *ngIf="(currentUserRole$ | async) as role">
+        <div
+          class="ticket-section triage-section"
+          *ngIf="role === UserRole.Agent || role === UserRole.Admin"
+        >
+          <h3>Triage</h3>
+          <ng-container *ngIf="triageSuggestion as suggestion; else suggestButton">
+            <div class="suggestion-details">
+              <div>
+                <strong>Status:</strong>
+                <app-status-label [status]="suggestion.suggested_status"></app-status-label>
+              </div>
+              <div>
+                <strong>Priority:</strong>
+                <app-priority-badge [priority]="suggestion.suggested_priority"></app-priority-badge>
+              </div>
+              <div class="suggested-tags">
+                <strong>Tags:</strong>
+                <mat-chip-list *ngIf="suggestion.suggested_tags.length; else noSuggestedTags">
+                  <mat-chip *ngFor="let tag of suggestion.suggested_tags">{{ tag }}</mat-chip>
+                </mat-chip-list>
+                <ng-template #noSuggestedTags>None</ng-template>
+              </div>
+            </div>
+            <div class="triage-actions">
+              <button mat-raised-button color="primary" (click)="acceptTriageSuggestion(ticket.id)">
+                Accept
+              </button>
+              <button mat-stroked-button color="warn" (click)="rejectTriageSuggestion()">Reject</button>
+            </div>
+          </ng-container>
+          <ng-template #suggestButton>
+            <button mat-raised-button color="accent" (click)="loadTriageSuggestion(ticket.id)">
+              Suggest Triage
+            </button>
+          </ng-template>
+        </div>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="actions">
+    <button mat-button (click)="goBack()">Go Back</button>
+  </div>
+</ng-container>
+
+<ng-template #noTicket>
+  <mat-card class="ticket-card">
+    <mat-card-title>Ticket Not Found</mat-card-title>
+    <mat-card-content>
+      <p>We could not find the requested ticket.</p>
+      <button mat-button (click)="goBack()">Go Back</button>
+    </mat-card-content>
+  </mat-card>
+</ng-template>
