@@ -712,6 +712,57 @@ Provide the full code for all new and modified files.
 
 """
 
+[commands."frontend:make-ticket-card-component-and-story"]
+prompt = """
+As an Angular developer, your task is to create a `TicketCardComponent` and its corresponding Storybook stories. This component will display a summary of a ticket and allow navigation to its details.
+
+**Context Files:**
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+
+**Instructions:**
+
+**1. Create `TicketCardComponent` in `frontend/src/app/components/ticket-card/`:**
+   - **`ticket-card.component.ts`:**
+     - Create a component with `@Input()` properties:
+       - `ticket: Ticket`
+       - `userRole: UserRole`
+     - Create an `@Output()` property:
+       - `viewDetails = new EventEmitter<number>()`
+     - Implement a method `onViewDetails()` that emits `this.ticket.id` through `viewDetails`.
+   - **`ticket-card.component.html`:**
+     - Use an Angular Material `mat-card` to display the ticket information.
+     - Display `ticket.title` as `mat-card-title`.
+     - Display a truncated `ticket.description` (e.g., first 100 characters with '...').
+     - Use `app-priority-badge` for `ticket.priority`.
+     - Use `app-status-label` for `ticket.status`.
+     - Display `creator_id` and `created_at`.
+     - Conditionally display `assignee_id` only if `userRole` is `UserRole.Agent` or `UserRole.Admin`.
+     - Add a `mat-raised-button` with text "View Details" that calls `onViewDetails()`.
+   - **`ticket-card.component.scss`:**
+     - Add basic styling for the card, spacing, and truncation.
+
+**2. Create Story for `TicketCardComponent` (`frontend/src/app/components/ticket-card/ticket-card.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `TicketCardComponent`, `Ticket`, `TicketPriority`, `TicketStatus`, `UserRole`.
+   - Define the `meta` object:
+     - `component: TicketCardComponent`
+     - `title: 'Components/TicketCard'`
+     - `tags: ['autodocs']`
+     - `decorators`: Add `moduleMetadata` to declare `PriorityBadgeComponent`, `StatusLabelComponent` and import `MatCardModule`, `MatButtonModule`, `MatIconModule`.
+     - `argTypes`: Define controls for `ticket` properties (e.g., `title`, `description`, `priority`, `status`, `assignee_id`, `creator_id`, `created_at`) and `userRole`.
+   - Create individual stories demonstrating different scenarios:
+     - `Default`: A basic ticket for a reporter.
+     - `AssignedTicketForAgent`: A ticket with an assignee, viewed by an agent.
+     - `HighPriorityInProgress`: A ticket with high priority and in-progress status.
+     - `LongDescription`: A ticket with a very long description to test truncation.
+
+Provide the full TypeScript/HTML/SCSS code for the new component files and the Storybook story file.
+
+"""
+
 [commands."frontend:make-ticket-details-component"]
 prompt = """
 As an Angular developer, your task is to create a `TicketDetailsComponent` that displays the details of a single ticket, including external user information and functionality for triage suggestions.

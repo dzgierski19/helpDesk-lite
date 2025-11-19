@@ -1,0 +1,47 @@
+<mat-card class="ticket-card">
+  <mat-card-header>
+    <mat-card-title>{{ ticket.title }}</mat-card-title>
+    <mat-card-subtitle>Ticket #{{ ticket.id }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <p class="description">
+      {{ truncatedDescription }}
+    </p>
+
+    <div class="meta">
+      <div class="meta-row">
+        <span class="meta-label">Priority</span>
+        <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Status</span>
+        <app-status-label [status]="ticket.status"></app-status-label>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Creator</span>
+        <span class="meta-value">#{{ ticket.creator_id }}</span>
+      </div>
+
+      <div class="meta-row" *ngIf="ticket.created_at">
+        <span class="meta-label">Created</span>
+        <span class="meta-value">{{ ticket.created_at | date: 'medium' }}</span>
+      </div>
+
+      <div class="meta-row" *ngIf="showAssignee">
+        <span class="meta-label">Assignee</span>
+        <span class="meta-value">
+          {{ ticket.assignee_id === null ? 'Unassigned' : ('#' + ticket.assignee_id) }}
+        </span>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-raised-button color="primary" (click)="onViewDetails()">
+      View Details
+    </button>
+  </mat-card-actions>
+</mat-card>

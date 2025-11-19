@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.ticket-card {
+  height: 100%;
+}
+
+mat-card-header {
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  margin: 0.5rem 0 1rem;
+  color: #444;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.meta-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.meta-value {
+  font-weight: 500;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
