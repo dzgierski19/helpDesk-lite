@@ -40,5 +40,5 @@ jobs:
           node-version: '18'
       - name: Install dependencies
         run: npm install
-      - name: Run placeholder tests
-        run: npm run test -- --watch=false || echo "Frontend tests not configured yet"
+      - name: Run frontend tests
+        run: npm run test -- --watch=false
