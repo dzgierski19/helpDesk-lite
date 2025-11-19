@@ -7,7 +7,6 @@ use App\Enums\TicketStatus;
 use App\Enums\UserRole;
 use App\Models\Ticket;
 use App\Models\TicketStatusChange;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +21,7 @@ class TicketController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Ticket::query()->with('assignee');
+        $user = $request->user();
 
         if ($status = $request->query('status')) {
             $query->where('status', $status);
@@ -39,10 +39,8 @@ class TicketController extends Controller
             $query->whereJsonContains('tags', $tag);
         }
 
-        if ($this->isReporterRequest($request->header('X-USER-ROLE'))) {
-            if ($reporterId = $this->getUserIdByRole(UserRole::Reporter)) {
-                $query->where('creator_id', $reporterId);
-            }
+        if ($user && $user->role === UserRole::Reporter->value) {
+            $query->where('creator_id', $user->id);
         }
 
         return response()->json($query->get());
@@ -63,7 +61,7 @@ class TicketController extends Controller
             'tags.*' => ['string'],
         ]);
 
-        $data['creator_id'] = $this->getUserIdByRole(UserRole::Reporter);
+        $data['creator_id'] = $request->user()->id;
         $data['tags'] = $data['tags'] ?? [];
 
         $ticket = Ticket::create($data)->load('assignee');
@@ -161,21 +159,5 @@ class TicketController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['error' => 'external_api_failed'], 502);
         }
-    }
-
-    private function isReporterRequest(?string $roleHeader): bool
-    {
-        return strtolower((string) $roleHeader) === UserRole::Reporter->value;
-    }
-
-    private function getUserIdByRole(UserRole $role): ?int
-    {
-        $cacheKey = "user_id_for_role_{$role->value}";
-
-        return Cache::remember(
-            $cacheKey,
-            now()->addMinute(),
-            static fn () => User::where('role', $role->value)->value('id')
-        );
     }
 }

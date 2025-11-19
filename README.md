@@ -37,7 +37,10 @@ The backend is a Laravel API. Configure environment variables before running mig
 cd backend
 composer install
 cp .env.example .env
+touch database/database.sqlite   # create SQLite file once
+composer require laravel/sanctum
 php artisan key:generate
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 php artisan migrate --seed
 ```
 
@@ -60,6 +63,22 @@ Essential Artisan commands:
 - `php artisan test` — backend feature/unit tests (used locally and in CI)
 - `php artisan migrate` — apply pending migrations
 - `php artisan db:seed` — reseed demo data
+- `composer require laravel/sanctum` — install Sanctum before running auth-protected endpoints (already added to composer.json; re-run if vendor directory is reset)
+
+### Environment configuration
+- Default `.env` uses SQLite (`DB_CONNECTION=sqlite`, `DB_DATABASE=database/database.sqlite`). Ensure the file exists (`touch database/database.sqlite`) before running migrations.
+- To switch to MySQL/Postgres, update `.env` accordingly, e.g.:
+  ```
+  DB_CONNECTION=mysql
+  DB_HOST=127.0.0.1
+  DB_PORT=3306
+  DB_DATABASE=helpdesk_lite
+  DB_USERNAME=root
+  DB_PASSWORD=secret
+  ```
+  Then rerun `php artisan migrate:fresh --seed`.
+- Docker containers read the same `.env`, so any DB changes should be reflected there before `docker compose up`.
+- Sanctum SPA config: set `SANCTUM_STATEFUL_DOMAINS` (default provided) when running the Angular app on a different host/port so cookies/tokens work.
 
 ## Frontend Setup
 The Angular app uses the same prompt-driven workflow and Storybook design system.

@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('tickets', TicketController::class);
+Route::post('login', [AuthController::class, 'login']);
 
-Route::post('tickets/{ticket}/triage-suggest', [TicketController::class, 'triageSuggest']);
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('user', [AuthController::class, 'user']);
 
-Route::get('external/user-info', [TicketController::class, 'externalUserInfo']);
+    Route::apiResource('tickets', TicketController::class);
+    Route::post('tickets/{ticket}/triage-suggest', [TicketController::class, 'triageSuggest']);
+    Route::get('external/user-info', [TicketController::class, 'externalUserInfo']);
+});

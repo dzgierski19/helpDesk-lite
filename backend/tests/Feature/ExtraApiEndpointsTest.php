@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ExtraApiEndpointsTest extends TestCase
@@ -17,6 +19,8 @@ class ExtraApiEndpointsTest extends TestCase
         parent::setUp();
 
         Cache::flush();
+
+        Sanctum::actingAs(User::factory()->create());
     }
 
     public function test_triage_suggest_returns_correct_mock_response(): void

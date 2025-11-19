@@ -9,6 +9,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class TicketCrudTest extends TestCase
@@ -38,6 +39,8 @@ class TicketCrudTest extends TestCase
         $this->admin = User::factory()->create([
             'role' => UserRole::Admin,
         ]);
+
+        Sanctum::actingAs($this->admin);
     }
 
     public function test_it_can_create_a_ticket(): void

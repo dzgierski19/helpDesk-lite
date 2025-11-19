@@ -9,6 +9,7 @@ use App\Models\TicketStatusChange;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class TicketLogicTest extends TestCase
@@ -28,6 +29,8 @@ class TicketLogicTest extends TestCase
         $this->admin = User::factory()->create(['role' => UserRole::Admin]);
         $this->agent = User::factory()->create(['role' => UserRole::Agent]);
         $this->reporter = User::factory()->create(['role' => UserRole::Reporter]);
+
+        Sanctum::actingAs($this->admin);
     }
 
     public function test_it_filters_tickets_by_status(): void

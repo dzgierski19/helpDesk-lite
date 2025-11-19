@@ -73,12 +73,15 @@ Rekord `TicketStatusChange` tworzony jest **automatycznie przy każdej zmianie `
 
 PUT /tickets/{id}
 
-# 3. Backend — API
+# 3. Backend — API (REST API, autoryzacja (Sanctum/JWT))
 
-Backend: **Laravel 10+**  
-Wszystkie endpointy zwracają **JSON**.
-
----
+## 3.0 Authentication
+- Wszystkie endpointy `/api/*` muszą być chronione za pomocą Laravel Sanctum.
+- Dostępne endpointy autoryzacji:
+  - `POST /api/login`
+  - `POST /api/logout`
+  - `GET /api/user`
+- Token autoryzacyjny jest wymagany do wykonywania operacji CRUD na ticketach.
 
 ## 3.1 Tickets CRUD
 
@@ -268,7 +271,16 @@ Każda komenda w `.gemini/commands.yaml` zawiera:
 
 `{{file "project_spec.md"}}`
 
-# 7. Definition of Done (DoD)
+# 7. Dev Environment
+Projekt wspiera uruchamianie w środowisku deweloperskim opartym na Docker Compose. Oczekuje się, że projekt będzie dostarczony z działającym stackiem Docker Compose, obejmującym kontenery dla backendu (PHP) oraz, opcjonalnie, dla frontendu.
+
+# 8. Continuous Integration / Continuous Deployment (CI/CD)
+Projekt wykorzystuje GitHub Actions do automatyzacji procesów CI/CD. Każde pchnięcie zmian (push) do repozytorium musi uruchomić następujące zadania:
+- Testy backendu (`php artisan test`).
+- Linting, testy jednostkowe i E2E frontendu.
+- Build i deployment Storybooka na GitHub Pages.
+
+# 9. Definition of Done (DoD)
 
 ### Backend
 - CRUD tickets działa
@@ -280,7 +292,7 @@ Każda komenda w `.gemini/commands.yaml` zawiera:
 
 ### Frontend
 - routing działa
-- login zapisuje rolę
+- login działa (autoryzacja Sanctum)
 - redirect działa
 - interceptor dodaje nagłówek
 - lista ticketów działa

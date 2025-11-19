@@ -432,6 +432,41 @@ Provide the full, refactored PHP code for `backend/app/Http/Controllers/TicketCo
 
 """
 
+[commands."backend:refactor-sanctum-setup"]
+prompt = """
+As a Laravel developer, your task is to refactor and improve an existing Laravel Sanctum setup to make it more robust, secure, and aligned with Laravel 11 conventions.
+
+**Context Files:**
+{{file "backend/bootstrap/app.php"}}
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/.env.example"}}
+{{file "backend/tests/Feature/AuthenticationTest.php"}}
+
+**Instructions:**
+
+**1. Refine Configuration (Laravel 11 Style):**
+   - **`backend/bootstrap/app.php`**: Verify and ensure the stateful API middleware is configured correctly for SPA authentication within the `->withMiddleware(...)` section. It should use `$middleware->statefulApi();`.
+   - **`backend/.env.example`**: Add the `SANCTUM_STATEFUL_DOMAINS` variable with a default value for local development, e.g., `SANCTUM_STATEFUL_DOMAINS=localhost:4200`.
+
+**2. Refactor `TicketController` to Use Authenticated User:**
+   - In `backend/app/Http/Controllers/TicketController.php`, completely remove all logic that reads or relies on the `X-USER-ROLE` header.
+   - **`index(Request $request)`**: Modify the authorization logic. It should now be based on the authenticated user's role (`$request->user()->role`). If the user's role is 'reporter', filter tickets where `creator_id` is the authenticated user's ID (`$request->user()->id`).
+   - **`store(Request $request)`**: The `creator_id` for a new ticket must be set from the authenticated user's ID (`$request->user()->id`).
+
+**3. Enhance Authentication Feature Test:**
+   - In `backend/tests/Feature/AuthenticationTest.php`, add a new, comprehensive end-to-end test method.
+   - **`test_full_authentication_flow_and_protected_resource_access()`**:
+     - Create a user using the factory.
+     - Make a POST request to `/api/login` with the user's credentials.
+     - Assert the login is successful and extract the `token` from the JSON response.
+     - Make a subsequent GET request to a protected endpoint like `/api/tickets` using the extracted token in the `Authorization: Bearer <token>` header.
+     - Assert a `200 OK` status for the protected resource request, proving the token-based authentication is working correctly from end to end.
+
+Provide the full PHP code for all the modified files.
+
+"""
+
 [commands."backend:refactor-tests-unit"]
 prompt = """
 As a Laravel developer, your task is to refactor existing unit tests to use model factories correctly and to improve assertion quality.
@@ -464,6 +499,75 @@ As a Laravel developer, your task is to refactor existing unit tests to use mode
 Provide the full PHP code for the two new/modified files:
 1. `backend/database/factories/TicketStatusChangeFactory.php`
 2. `backend/tests/Unit/ModelRelationshipsTest.php`
+
+"""
+
+[commands."backend:setup-sanctum"]
+prompt = """
+As a Laravel developer, your task is to implement API authentication using Laravel Sanctum. This involves installing Sanctum, configuring it, creating authentication routes, protecting existing API endpoints, and writing a feature test to verify the setup.
+
+**Context Files:**
+{{file "backend/composer.json"}}
+{{file "backend/config/app.php"}}
+{{file "backend/config/auth.php"}}
+{{file "backend/app/Http/Kernel.php"}}
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Models/User.php"}}
+
+**Instructions:**
+
+**1. Install and Publish Sanctum:**
+   - First, check if `laravel/sanctum` is in `composer.json`. If not, the first step is to require it.
+   - Then, publish the Sanctum configuration and migration files using `php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`.
+   - Run the new migration with `php artisan migrate`.
+
+**2. Configure Sanctum:**
+   - **`backend/app/Http/Kernel.php`**: Add `Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class` to the `api` middleware group.
+   - **`backend/app/Models/User.php`**: Ensure the `User` model uses the `HasApiTokens` trait.
+
+**3. Create Authentication Routes and Controller:**
+   - **`backend/app/Http/Controllers/AuthController.php`**: Create a new controller with the following methods:
+     - `login(Request $request)`:
+       - Validate `email` and `password`.
+       - Attempt to authenticate the user using `Auth::attempt()`.
+       - If successful, create a token using `$user->createToken('api-token')->plainTextToken` and return it as JSON.
+       - If unsuccessful, return a 401 Unauthorized error.
+     - `logout(Request $request)`:
+       - Revoke the current user's token using `$request->user()->currentAccessToken()->delete()`.
+       - Return a success response.
+     - `user(Request $request)`:
+       - Return the currently authenticated user (`$request->user()`).
+   - **`backend/routes/api.php`**:
+     - Add the following public route: `POST /login` pointing to `AuthController@login`.
+     - Create a new route group with the `auth:sanctum` middleware.
+     - Inside this group, add the following routes:
+       - `POST /logout` pointing to `AuthController@logout`.
+       - `GET /user` pointing to `AuthController@user`.
+       - Move the existing `Route::apiResource('tickets', ...)` and other ticket-related routes inside this `auth:sanctum` group to protect them.
+
+**4. Create Authentication Feature Test:**
+   - **`backend/tests/Feature/AuthenticationTest.php`**: Create a new feature test file.
+   - **Test `test_user_can_login_and_get_token()`**:
+     - Create a user with a known password.
+     - Send a POST request to `/api/login` with the user's credentials.
+     - Assert a `200 OK` status.
+     - Assert the response JSON contains a `token` key.
+   - **Test `test_user_can_access_protected_route_with_valid_token()`**:
+     - Create a user.
+     - Use `Sanctum::actingAs($user)` to authenticate the user for the test.
+     - Send a GET request to the protected `/api/user` endpoint.
+     - Assert a `200 OK` status.
+     - Assert the response contains the user's data.
+   - **Test `test_user_cannot_access_protected_route_with_invalid_token()`**:
+     - Send a GET request to `/api/user` with an invalid `Authorization` header (e.g., `Bearer invalid-token`).
+     - Assert a `401 Unauthorized` status.
+
+Provide the full PHP code for all new and modified files:
+- `backend/app/Http/Kernel.php`
+- `backend/app/Models/User.php`
+- `backend/routes/api.php`
+- `backend/app/Http/Controllers/AuthController.php` (new file)
+- `backend/tests/Feature/AuthenticationTest.php` (new file)
 
 """
 
