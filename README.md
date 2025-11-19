@@ -1,17 +1,9 @@
 📌 Helpdesk Lite — Prompt-Driven Development (PDD)
 
-Helpdesk Lite is a complete, two-tier system (Laravel + Angular) with triage, API integration, and a UI Storybook — built using a Prompt-Driven Development (PDD) approach with:
+## Overview
+Helpdesk Lite is a complete two-tier support platform composed of a Laravel backend API, an Angular frontend, and a Storybook-powered design system. Every line of code is produced via Prompt-Driven Development: Gemini prompts define the desired change and OpenAI Codex executes those prompts to generate code. The stack, specification, and LLM logs live in this monorepo so the workflow is transparent and reproducible.
 
-- **Gemini CLI** → generating prompts and commands
-- **Codex (gpt-5.1-codex)** → generating code
-- **project_spec.md** → single source of truth
-- **notes/llm/** → LLM iteration logs
-
-The repository contains a complete backend, frontend, Storybook, and a full LLM workflow.
-
----
-
-### 🏗 Project Structure (monorepo)
+## 🏗 Project Structure (monorepo)
 ```
 helpdesk-lite/
 │
@@ -32,70 +24,157 @@ helpdesk-lite/
     ├── ...
 ```
 
----
+## Prerequisites
+- PHP 8.2+ with Composer
+- Node.js 20+ with npm
+- Angular CLI (`npm install -g @angular/cli`)
+- Docker & Docker Compose (optional, for containerized workflow)
 
-### 🧠 Prompt-Driven Development (PDD)
+## Backend Setup
+The backend is a Laravel API. Configure environment variables before running migrations (DB, cache, external API keys, etc.).
 
-In this project, code is not written manually.
-Each major step:
-
-1.  starts as a prompt for Gemini,
-2.  Gemini generates a command → goes into `.gemini/commands.yaml`,
-3.  `codex run` generates code,
-4.  the result is saved in `notes/llm/`.
-
-The entire process is transparent and reproducible.
-
-To keep both CLIs in sync we mirror the slash commands into `.codex/codex.toml`.  
-After editing `.gemini/commands.yaml`, run:
-
-```
-npm run sync:commands
-```
-
-This script regenerates the Codex config so `codex run <command>` and Gemini slash commands stay identical.
-
-For a one-off run directly from the terminal (without the interactive Codex prompt), use:
-
-```
-npm run codex -- backend:make-migrations
-```
-
-That command reads the prompt from `.gemini/commands.yaml`, forwards it to `codex exec`, and automatically stores the full Markdown log in `notes/llm/`.
-
----
-
-### 🧰 How to run the project
-**Backend (Laravel)**
 ```bash
 cd backend
 composer install
+cp .env.example .env
+php artisan key:generate
 php artisan migrate --seed
+```
+
+Run the API locally:
+
+```bash
 php artisan serve
 ```
 
-Or in a Dockerized version (if using Docker Compose):
+By default the project uses SQLite (handy for local dev and CI). To switch to MySQL/Postgres, edit `.env` and update the usual `DB_*` variables before running the migrations.
+
+Or bring up the Docker environment (PHP + SQLite baked in) if you prefer container parity with CI:
+
 ```bash
 docker compose up --build
 ```
 
-**Frontend (Angular)**
+Essential Artisan commands:
+
+- `php artisan test` — backend feature/unit tests (used locally and in CI)
+- `php artisan migrate` — apply pending migrations
+- `php artisan db:seed` — reseed demo data
+
+## Frontend Setup
+The Angular app uses the same prompt-driven workflow and Storybook design system.
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
 
-**Storybook**
+Quality gates:
+
 ```bash
-cd frontend
-npm run storybook
+npm run lint
+npm run test
+npm run e2e
 ```
 
----
+E2E tests rely on Playwright; install browsers if they are missing:
 
-### 🔐 Roles and login
+```bash
+npx playwright install
+```
 
+Mock data toggle — useful for E2E suites or UI development without a backend:
+
+```js
+localStorage.useMockData = 'true';
+```
+
+Reset to real API data by removing the key or setting it to `'false'`.
+
+## Storybook
+Storybook documents the shared UI components that power the Angular frontend.
+
+- Run locally: `cd frontend && npm run storybook`
+- Build static bundle: `cd frontend && npm run build-storybook`
+- Deploy: `cd frontend && npm run deploy-storybook` (builds and pushes `storybook-static/` to the `gh-pages` branch—set `GH_TOKEN` or configure git auth first). Once GitHub Pages is enabled for `gh-pages`, the docs publish to `https://<your-user>.github.io/helpDesk-lite/`.
+
+## Docker workflow 
+You can run both tiers via Docker Compose (hot reload enabled through bind mounts):
+
+```bash
+# from helpdesk-lite/
+docker compose up --build backend frontend
+```
+
+- Backend runs at `http://localhost:8000` (the container executes `composer install`, copies `.env.example` if missing, runs migrations/seeds, then `php artisan serve`).
+- Frontend runs at `http://localhost:4200` via `npm start --host 0.0.0.0 --port 4200`.
+- Storybook can be started with `docker compose up storybook` (served on `http://localhost:6006`).
+
+Use `docker compose exec backend php artisan migrate --seed` if you change migrations while the containers are running. Stop everything with `Ctrl+C` or `docker compose down`.
+
+## API usage
+All endpoints live under `/api/*`. Every request should include `X-USER-ROLE` (`admin`, `agent`, or `reporter`). Examples:
+
+```bash
+# List tickets
+curl -s http://127.0.0.1:8000/api/tickets
+
+# Create a ticket (reporter role)
+curl -i -X POST http://127.0.0.1:8000/api/tickets \
+  -H "Content-Type: application/json" \
+  -H "X-USER-ROLE: reporter" \
+  -d '{
+        "title": "Customer cannot reset password",
+        "description": "User reports password reset emails never arrive.",
+        "priority": "high",
+        "status": "new",
+        "assignee_id": 2,
+        "tags": ["auth", "email"]
+      }'
+
+# Partial update (PATCH)
+curl -i -X PATCH http://127.0.0.1:8000/api/tickets/1 \
+  -H "Content-Type: application/json" \
+  -H "X-USER-ROLE: admin" \
+  -d '{"status":"resolved","priority":"low"}'
+
+# Delete a ticket
+curl -i -X DELETE http://127.0.0.1:8000/api/tickets/1 \
+  -H "X-USER-ROLE: admin"
+```
+
+Validation errors return HTTP 422 with JSON bodies (e.g., `{"message":"The title field is required.","errors":{"title":["..."]}}`).
+
+## LLM Workflow
+Prompt-Driven Development (PDD) keeps code generation deterministic:
+
+1. Every change begins as a Gemini prompt stored in `.gemini/commands.yaml`. Each prompt references `project_spec.md`, reinforcing it as the source of truth.
+2. `codex run <command>` executes the prompt, producing code via OpenAI Codex. One-off executions can be run through `npm run codex -- <command>`.
+3. Logs are persisted to `notes/llm/` for auditing and future learning.
+4. Run `npm run sync:commands` whenever `.gemini/commands.yaml` changes to mirror commands into `.codex/codex.toml`.
+
+This process ensures Gemini prompts and Codex execution stay aligned, giving us reproducible generation for backend, frontend, and Storybook features.
+
+## Continuous Integration
+GitHub Actions at `.github/workflows/ci.yml` enforce guardrails on every push:
+
+- Backend job: installs Composer dependencies and runs `php artisan test`.
+- Frontend job: executes `npm run lint`, `npm run test`, and `npm run e2e`.
+- Storybook job: builds via `npm run build-storybook` and deploys/publishes the static bundle.
+
+## Verification Checklist
+Run these commands (in order) to verify the entire system:
+
+```bash
+cd backend && php artisan test
+cd frontend && npm run lint
+cd frontend && npm run test
+cd frontend && npm run e2e
+cd frontend && npm run build-storybook
+```
+
+## 🔐 Roles and login
 Login is "fake" — role selection from a dropdown:
 
 - `admin`
@@ -110,10 +189,7 @@ The Angular Interceptor adds:
 
 Missing role → redirect to `/login`.
 
----
-
-### 🗄 Git workflow (professional, used in the project)
-
+## 🗄 Git workflow (professional, used in the project)
 The project uses a simple, clear workflow:
 
 **Branches**
@@ -138,9 +214,7 @@ feat(frontend): implement login flow
 docs: describe LLM Flow in README
 ```
 
----
-
-### 📚 Definition of Done (DoD) – according to specification
+## 📚 Definition of Done (DoD) – according to specification
 **Backend**
 
 - ✔ CRUD tickets
@@ -169,18 +243,14 @@ docs: describe LLM Flow in README
 - ✔ full logs in `notes/llm/`
 - ✔ README describes the process
 
----
 
-### 🧩 LLMs used in the project
+## 🧩 LLMs used in the project
 
 - **Google Gemini CLI** – generating prompts, reflection, iteration
 - **OpenAI Codex (gpt-5.1-codex)** – generating backend, frontend, and Storybook code
 - **project_spec.md** – single source of truth, included in all commands
 
----
-
-### ✔ Summary
-
+## ✔ Summary
 The repository contains:
 
 - complete backend + frontend + Storybook,

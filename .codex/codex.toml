@@ -487,6 +487,61 @@ Provide the full, updated YAML content for the `.github/workflows/ci.yml` file.
 
 """
 
+[commands."docs:update-readme"]
+prompt = """
+As a technical writer and developer, your task is to update the `helpdesk-lite/README.md` file to serve as the definitive runbook for the project. You need to merge new, detailed sections into the existing README, expanding upon it rather than replacing it wholesale.
+
+**Context File (to be updated):**
+{{file "README.md"}}
+
+**Instructions:**
+
+Update the `README.md` to include the following sections, using clear markdown headings and code blocks for commands.
+
+**1. Overview:**
+   - Expand the existing summary to explicitly mention the stack: Laravel backend, Angular frontend, and Storybook for the design system.
+   - Reiterate the LLM-driven approach using Gemini prompts and Codex execution.
+
+**2. Prerequisites:**
+   - Add a new section listing required tooling: PHP/Composer, Node/npm, Angular CLI, and optionally Docker/Docker Compose.
+
+**3. Backend Setup:**
+   - Expand the existing backend instructions.
+   - Detail the setup commands in order: `cd backend`, `composer install`, `cp .env.example .env`, `php artisan key:generate`, and `php artisan migrate --seed`.
+   - Explain how to run the API locally (`php artisan serve` or `docker compose up`).
+   - List key Artisan commands: `php artisan test`, `php artisan migrate`, `php artisan db:seed`.
+
+**4. Frontend Setup:**
+   - Expand the existing frontend instructions.
+   - Detail the setup commands: `cd frontend`, `npm install`, `npm start`.
+   - List linting and testing commands: `npm run lint`, `npm run test`, `npm run e2e`.
+   - Explain the mock data toggle: how to set `localStorage.useMockData = 'true'` and when it's useful (for E2E tests or development without a backend).
+   - Mention the need to run `npx playwright install` if browser dependencies are missing.
+
+**5. Storybook:**
+   - Expand the existing Storybook section.
+   - Explain how to run it locally (`npm run storybook`).
+   - Explain how to build it for deployment (`npm run build-storybook`).
+   - Include a placeholder for the GitHub Pages URL (e.g., `https://<user>.github.io/helpDesk-lite/`).
+
+**6. LLM Workflow:**
+   - Consolidate the existing "Prompt-Driven Development" content into this section.
+   - Describe the role of `.gemini/commands.yaml` (stores prompts) and the use of Codex.
+   - Note that every prompt references `project_spec.md` as the source of truth.
+   - Explain that LLM interaction logs are stored in `notes/llm/`.
+
+**7. Continuous Integration:**
+   - Add a new section summarizing the GitHub Actions workflow (`.github/workflows/ci.yml`).
+   - Mention the key jobs: backend tests (`php artisan test`), frontend tests (lint, unit, and E2E), and the Storybook build/deploy step.
+
+**8. Verification Checklist:**
+   - Add a new section with a list of commands to run to ensure the entire project is working correctly.
+   - Include backend tests, frontend tests (unit and E2E), and the Storybook build command.
+
+Provide the full, updated content for the `README.md` file.
+
+"""
+
 [commands."frontend:integrate-ui"]
 prompt = """
 As an Angular developer, your task is to integrate and refine the UI for the ticket list and ticket details pages. This involves adding filtering, loading/empty states, and improving the responsive layout and user feedback.
