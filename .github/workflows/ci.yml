@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
 
 jobs:
   backend:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
       - name: Install Composer dependencies
         run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
       - name: Prepare environment
@@ -27,7 +27,7 @@ jobs:
       - name: Run backend tests
         run: php artisan test
 
-  frontend-tests:
+  frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,7 +37,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
       - name: Install dependencies
         run: npm install
       - name: Install Playwright browsers
