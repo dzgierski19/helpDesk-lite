@@ -12,14 +12,15 @@ test('should allow a user to log in, view the ticket list, and see ticket detail
   await page.getByRole('button', { name: 'Agent' }).click();
   await expect(page).toHaveURL(/\/tickets$/);
 
-  const ticketList = page.locator('.ticket-table, .mobile-view app-ticket-card');
-  await expect(ticketList.first()).toBeVisible();
+  const mobileCards = page.locator('.mobile-view app-ticket-card');
+  const desktopRows = page.locator('.ticket-table tr[role="row"]');
 
-  const mobileDetailsButton = page.getByRole('button', { name: 'View Details' }).first();
-  if (await mobileDetailsButton.isVisible()) {
-    await mobileDetailsButton.click();
+  if ((await mobileCards.count()) > 0) {
+    await expect(mobileCards.first()).toBeVisible();
+    await page.getByRole('button', { name: 'View Details' }).first().click();
   } else {
-    await page.locator('button[aria-label=\"View ticket\"]').first().click();
+    await expect(desktopRows.nth(1)).toBeVisible();
+    await page.locator('button[aria-label="View ticket"]').first().click();
   }
 
   await expect(page).toHaveURL(/\/tickets\/\d+$/);
