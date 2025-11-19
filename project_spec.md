@@ -155,6 +155,9 @@ Błąd:
 # 4. Frontend (Angular)
 Framework: Angular 16+
 
+- Każdy nowy komponent Angular musi zostać dodany do odpowiedniego modułu (i eksportowany, jeśli jest używany poza nim).
+- Gdy template korzysta z Angular Material (`mat-*`), wymagane moduły (np. `MatCardModule`, `MatTableModule`) muszą zostać dodane do `imports` tego modułu.
+
 Aplikacja ma trzy sekcje:
 
 - Fake Login

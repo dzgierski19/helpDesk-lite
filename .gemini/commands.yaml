@@ -276,8 +276,8 @@ commands:
          - Modify the existing `backend/tests/Unit/ModelRelationshipsTest.php` file.
          - **Use the new factory:** In the `test_ticket_has_many_status_changes` method, replace the `TicketStatusChange::create()` call with the new `TicketStatusChangeFactory`.
          - **Improve `hasMany` assertions:**
-           - In `test_user_has_many_created_tickets`, after asserting the count, add an assertion to verify the inverse relationship. Iterate through the collection and check that each ticket's `creator` is the original user. Example: `$user->ticketsCreated->each(fn (Ticket $ticket) => $this->assertTrue($ticket->creator->is($user)));`
-           - In `test_user_has_many_assigned_tickets`, do the same for the `assignee` relationship. Example: `$user->ticketsAssigned->each(fn (Ticket $ticket) => $this->assertTrue($ticket->assignee->is($user)));`
+           - In `test_user_has-many-created-tickets`, after asserting the count, add an assertion to verify the inverse relationship. Iterate through the collection and check that each ticket's `creator` is the original user. Example: `$user->ticketsCreated->each(fn (Ticket $ticket) => $this->assertTrue($ticket->creator->is($user)));`
+           - In `test_user_has-many-assigned-tickets`, do the same for the `assignee` relationship. Example: `$user->ticketsAssigned->each(fn (Ticket $ticket) => $this->assertTrue($ticket->assignee->is($user)));`
 
       Provide the full PHP code for the two new/modified files:
       1. `backend/database/factories/TicketStatusChangeFactory.php`
@@ -676,3 +676,44 @@ commands:
            - Add basic styling for layout and spacing.
 
       Provide the full code for all three new files: `ticket-details.component.ts`, `ticket-details.component.html`, and `ticket-details.component.scss`.
+  frontend:make-routing-and-guards:
+    prompt: |
+      As an Angular developer, your task is to establish the application's routing structure. This includes creating an `AppRoutingModule`, implementing route guards for authentication and role-based access control, and updating the main `AppModule`.
+
+      **Context Files:**
+      {{file "frontend/src/app/services/auth.service.ts"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+      {{file "frontend/src/app/app.module.ts"}}
+
+      **Instructions:**
+
+      **1. Create `AuthGuard` (`frontend/src/app/guards/auth.guard.ts`):**
+         - Create a new functional route guard.
+         - Inject `AuthService` and `Router`.
+         - The guard should check if a user role exists using `authService.getSnapshotUserRole()`.
+         - If a role exists, return `true`.
+         - If no role exists, redirect the user to the `/login` page by returning `router.parseUrl('/login')`.
+
+      **2. Create `RoleGuard` (`frontend/src/app/guards/role.guard.ts`):**
+         - Create a new functional route guard.
+         - Inject `AuthService`.
+         - The guard should read an array of allowed roles from the route's `data` property (e.g., `route.data['roles'] as UserRole[]`).
+         - It should compare the current user's role (`authService.getSnapshotUserRole()`) against the allowed roles.
+         - Return `true` if the user's role is in the allowed list, otherwise return `false`.
+
+      **3. Create `AppRoutingModule` (`frontend/src/app/app-routing.module.ts`):**
+         - Create a new routing module.
+         - Import `LoginComponent`, `TicketListComponent`, and `TicketDetailsComponent`.
+         - Define the application routes:
+           - `{ path: 'login', component: LoginComponent }`
+           - `{ path: 'tickets', component: TicketListComponent, canActivate: [AuthGuard] }`
+           - `{ path: 'tickets/:id', component: TicketDetailsComponent, canActivate: [AuthGuard] }`
+           - `{ path: '', redirectTo: '/tickets', pathMatch: 'full' }`
+           - `{ path: '**', redirectTo: '/tickets' }` // Wildcard route
+         - Configure the `@NgModule` to import `RouterModule.forRoot(routes)` and export `RouterModule`.
+
+      **4. Modify `AppModule` (`frontend/src/app/app.module.ts`):**
+         - Import the newly created `AppRoutingModule`.
+         - Add `AppRoutingModule` to the `imports` array of `AppModule`.
+
+      Provide the full code for all four new/modified files.
