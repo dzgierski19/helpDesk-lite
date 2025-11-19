@@ -1,10 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
+import { UiService } from '../../services/ui.service';
 
 @Component({
   selector: 'app-ticket-details',
@@ -20,6 +22,7 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
     suggested_priority: TicketPriority;
     suggested_tags: string[];
   } | null = null;
+  ticketFound = true;
 
   readonly UserRole = UserRole;
   readonly TicketPriority = TicketPriority;
@@ -33,6 +36,7 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly ticketService: TicketService,
     private readonly authService: AuthService,
+    private readonly uiService: UiService,
     private readonly router: Router
   ) {}
 
@@ -57,9 +61,19 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.ticketService.getTriageSuggestion(ticketId).subscribe((suggestion) => {
-      this.triageSuggestion = suggestion;
-    });
+    this.uiService.showLoader();
+    this.ticketService
+      .getTriageSuggestion(ticketId)
+      .pipe(finalize(() => this.uiService.hideLoader()))
+      .subscribe({
+        next: (suggestion) => {
+          this.triageSuggestion = suggestion;
+          this.uiService.showSnackbar('Triage suggestion ready.');
+        },
+        error: () => {
+          this.uiService.showSnackbar('Failed to load triage suggestion.');
+        },
+      });
   }
 
   acceptTriageSuggestion(ticketId: number): void {
@@ -67,20 +81,31 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.uiService.showLoader();
     this.ticketService
       .updateTicket(ticketId, {
         status: this.triageSuggestion.suggested_status,
         priority: this.triageSuggestion.suggested_priority,
         tags: this.triageSuggestion.suggested_tags,
       })
-      .subscribe(() => {
-        this.triageSuggestion = null;
-        this.refreshTicket();
+      .pipe(finalize(() => this.uiService.hideLoader()))
+      .subscribe({
+        next: () => {
+          this.triageSuggestion = null;
+          this.refreshTicket();
+          this.uiService.showSnackbar('Triage suggestion accepted!');
+        },
+        error: () => {
+          this.uiService.showSnackbar('Failed to accept triage suggestion.');
+        },
       });
   }
 
   rejectTriageSuggestion(): void {
+    this.uiService.showLoader();
     this.triageSuggestion = null;
+    this.uiService.hideLoader();
+    this.uiService.showSnackbar('Triage suggestion rejected.');
   }
 
   goBack(): void {
@@ -89,8 +114,24 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
 
   private refreshTicket(): void {
     if (this.ticketId !== null) {
-      this.ticket$ = this.ticketService.getTicket(this.ticketId);
+      this.ticketFound = true;
+      this.uiService.showLoader();
+      this.ticket$ = this.ticketService.getTicket(this.ticketId).pipe(
+        tap(() => {
+          this.ticketFound = true;
+        }),
+        catchError((error) => {
+          if (error?.status === 404) {
+            this.ticketFound = false;
+          } else {
+            this.uiService.showSnackbar('Unable to load ticket details.');
+          }
+          return of(undefined);
+        }),
+        finalize(() => this.uiService.hideLoader()),
+      );
     } else {
+      this.ticketFound = false;
       this.ticket$ = of(undefined);
     }
   }

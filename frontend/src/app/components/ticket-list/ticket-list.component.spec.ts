@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TicketListComponent } from './ticket-list.component';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
+import { UiService } from '../../services/ui.service';
 import { UserRole } from '../../models/enums';
 
 describe('TicketListComponent', () => {
@@ -11,6 +13,8 @@ describe('TicketListComponent', () => {
   let component: TicketListComponent;
   let ticketService: jasmine.SpyObj<TicketService>;
   let authService: jasmine.SpyObj<AuthService>;
+  let uiService: jasmine.SpyObj<UiService>;
+  let loadingSubject: BehaviorSubject<boolean>;
 
   const setupComponent = () => {
     fixture = TestBed.createComponent(TicketListComponent);
@@ -19,15 +23,28 @@ describe('TicketListComponent', () => {
   };
 
   beforeEach(waitForAsync(async () => {
-    ticketService = jasmine.createSpyObj<TicketService>('TicketService', ['getTickets']);
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['getSnapshotUserRole']);
+    ticketService = jasmine.createSpyObj<TicketService>('TicketService', [
+      'getTickets',
+    ]);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', [
+      'getSnapshotUserRole',
+    ]);
+    loadingSubject = new BehaviorSubject<boolean>(false);
+    uiService = jasmine.createSpyObj<UiService>(
+      'UiService',
+      ['showLoader', 'hideLoader', 'showSnackbar'],
+      {
+        loading$: loadingSubject,
+      },
+    );
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
+      imports: [RouterTestingModule, NoopAnimationsModule],
       declarations: [TicketListComponent],
       providers: [
         { provide: TicketService, useValue: ticketService },
         { provide: AuthService, useValue: authService },
+        { provide: UiService, useValue: uiService },
       ],
     })
       .overrideComponent(TicketListComponent, { set: { template: '' } })

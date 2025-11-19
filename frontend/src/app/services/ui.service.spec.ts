@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { UiService } from './ui.service';
@@ -11,7 +12,7 @@ describe('UiService', () => {
     const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
-      imports: [MatSnackBarModule],
+      imports: [MatSnackBarModule, NoopAnimationsModule],
       providers: [{ provide: MatSnackBar, useValue: snackBarSpy }],
     });
 

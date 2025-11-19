@@ -467,6 +467,76 @@ Provide the full PHP code for the two new/modified files:
 
 """
 
+[commands."ci:add-e2e-tests"]
+prompt = """
+As a DevOps engineer, your task is to update the existing GitHub Actions workflow to include a new step for running frontend End-to-End (E2E) tests with Playwright.
+
+**Context File:**
+{{file ".github/workflows/ci.yml"}}
+
+**Instructions:**
+
+1.  Locate the `frontend-tests` job in the `.github/workflows/ci.yml` file.
+2.  After the step named "Run unit tests", add a new step to execute the E2E tests.
+3.  This new step should have the following properties:
+    - `name`: "Run E2E tests"
+    - `working-directory`: "frontend"
+    - `run`: "npm run e2e"
+
+Provide the full, updated YAML content for the `.github/workflows/ci.yml` file.
+
+"""
+
+[commands."frontend:integrate-ui"]
+prompt = """
+As an Angular developer, your task is to integrate and refine the UI for the ticket list and ticket details pages. This involves adding filtering, loading/empty states, and improving the responsive layout and user feedback.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.scss"}}
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Refactor `TicketListComponent`:**
+   - **`ticket-list.component.ts`:**
+     - Use a `FormGroup` to manage filter controls for `status`, `priority`, and `tag`.
+     - Create a method `applyFilters()` that reads values from the form and calls `this.ticketService.getTickets()` with the filters.
+     - In `ngOnInit`, call `applyFilters()` initially to load all tickets.
+     - Add a public property `isLoading$` from `uiService.loading$`.
+   - **`ticket-list.component.html`:**
+     - Create a `<form>` with the `FormGroup`. Add `mat-form-field` controls for status (`mat-select`), priority (`mat-select`), and tag (`input`). Add a "Filter" button.
+     - Use `*ngIf="isLoading$ | async"` to show a loading indicator (e.g., `mat-progress-bar`) above the ticket list.
+     - Use `*ngIf` on the ticket list container (`*ngIf="(tickets$ | async) as tickets"`) to handle the observable.
+     - Inside, add an empty state message (`*ngIf="!tickets.length"`) like "No tickets found." that shows when the list is empty.
+     - Ensure the responsive layout with `.desktop-view` (table) and `.mobile-view` (cards) is correctly implemented.
+   - **`ticket-list.component.scss`:**
+     - Add styles for the filter form, ensuring it's well-aligned and responsive.
+
+**2. Refactor `TicketDetailsComponent`:**
+   - **`ticket-details.component.ts`:**
+     - Inject `UiService`.
+     - In `loadTriageSuggestion`, `acceptTriageSuggestion`, and `rejectTriageSuggestion`, use `uiService.showLoader()` and `uiService.hideLoader()` to manage the loading state during the async operations.
+     - Use `uiService.showSnackbar()` to provide feedback to the user on success (e.g., "Triage suggestion accepted!") or failure.
+     - Modify the `getTicket` call to include error handling. If the ticket is not found (e.g., 404 error), set a flag like `ticketFound = false`.
+   - **`ticket-details.component.html`:**
+     - Add a top-level `*ngIf` to show an "Ticket not found" message if `ticketFound` is false.
+     - Restructure the layout:
+       - Use `<app-ticket-card>` at the top to show a summary of the ticket.
+       - Below the card, create separate sections (e.g., using `mat-card` or `mat-expansion-panel`) for "Full Description", "Status History", and "Triage".
+   - **`ticket-details.component.scss`:**
+     - Refine the responsive layout. Ensure the new sections stack vertically on mobile and are well-spaced.
+
+Provide the full, updated code for all modified TypeScript, HTML, and SCSS files.
+
+"""
+
 [commands."frontend:make-additional-tests"]
 prompt = """
 As an Angular developer, your task is to create specific unit tests for key parts of the application, focusing on HTTP interactions and component logic.
@@ -1000,15 +1070,9 @@ Create the following `.spec.ts` files with the specified tests. Use `TestBed` fo
 
 **2. `frontend/src/app/services/ui.service.spec.ts`:**
    - **Setup:** Configure `TestBed` with `MatSnackBarModule`. Create a mock for `MatSnackBar`.
-   - **`showLoader() should increment pending requests and emit true`**:
-     - Call `showLoader()`.
-     - Assert that `loading$` emits `true`.
-   - **`hideLoader() should decrement pending requests and emit false when counter is zero`**:
-     - Call `showLoader()` twice, then `hideLoader()` once. Assert `loading$` is still `true`.
-     - Call `hideLoader()` again. Assert `loading$` emits `false`.
-   - **`showSnackbar() should call MatSnackBar.open`**:
-     - Call `showSnackbar()`.
-     - Assert that the `snackBar.open` mock was called with the correct arguments.
+   - **`showLoader() should emit true from loading$`**: Call `showLoader()` and assert that `loading$` emits `true`.
+   - **`hideLoader() should emit false from loading$`**: Call `showLoader()` then `hideLoader()` and assert that `loading$` emits `false`.
+   - **`showSnackbar() should call MatSnackBar.open`**: Call `showSnackbar()` and assert that the `snackBar.open` mock was called with the correct arguments.
 
 **3. `frontend/src/app/guards/auth.guard.spec.ts`:**
    - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `AuthService` and `Router`.

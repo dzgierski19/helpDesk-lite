@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
+import { UiService } from '../../services/ui.service';
 
 describe('TicketDetailsComponent', () => {
   let component: TicketDetailsComponent;
@@ -13,6 +14,7 @@ describe('TicketDetailsComponent', () => {
   let ticketService: jasmine.SpyObj<TicketService>;
   let roleSubject: BehaviorSubject<UserRole | null>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
+  let uiServiceMock: jasmine.SpyObj<UiService>;
 
   beforeEach(async () => {
     ticketService = jasmine.createSpyObj('TicketService', [
@@ -32,6 +34,11 @@ describe('TicketDetailsComponent', () => {
     );
     authServiceMock.getCurrentUserRole.and.returnValue(roleSubject.asObservable());
     authServiceMock.getSnapshotUserRole.and.callFake(() => roleSubject.value);
+    uiServiceMock = jasmine.createSpyObj<UiService>('UiService', [
+      'showLoader',
+      'hideLoader',
+      'showSnackbar',
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [TicketDetailsComponent],
@@ -43,6 +50,7 @@ describe('TicketDetailsComponent', () => {
         },
         { provide: AuthService, useValue: authServiceMock },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
+        { provide: UiService, useValue: uiServiceMock },
       ],
     }).compileComponents();
 
