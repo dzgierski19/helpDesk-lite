@@ -12,7 +12,7 @@ describe('TicketDetailsComponent', () => {
   let fixture: ComponentFixture<TicketDetailsComponent>;
   let ticketService: jasmine.SpyObj<TicketService>;
   let roleSubject: BehaviorSubject<UserRole | null>;
-  let authServiceMock: AuthService;
+  let authServiceMock: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
     ticketService = jasmine.createSpyObj('TicketService', [
@@ -25,13 +25,13 @@ describe('TicketDetailsComponent', () => {
     ticketService.getExternalUserInfo.and.returnValue(of({ name: 'External' }));
 
     roleSubject = new BehaviorSubject<UserRole | null>(UserRole.Agent);
-    authServiceMock = {
-      currentUserRole$: roleSubject,
-      login: () => {},
-      logout: () => {},
-      getCurrentUserRole: () => roleSubject.asObservable(),
-      getSnapshotUserRole: () => roleSubject.value,
-    } as AuthService;
+    authServiceMock = jasmine.createSpyObj<AuthService>(
+      'AuthService',
+      ['login', 'logout', 'getCurrentUserRole', 'getSnapshotUserRole'],
+      { currentUserRole$: roleSubject.asObservable() }
+    );
+    authServiceMock.getCurrentUserRole.and.returnValue(roleSubject.asObservable());
+    authServiceMock.getSnapshotUserRole.and.callFake(() => roleSubject.value);
 
     await TestBed.configureTestingModule({
       declarations: [TicketDetailsComponent],

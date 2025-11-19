@@ -74,4 +74,13 @@ describe('TicketListComponent', () => {
 
     expect(ticketService.getTickets).toHaveBeenCalled();
   });
+
+  it('should set userRole to Reporter when authService returns null', () => {
+    authService.getSnapshotUserRole.and.returnValue(null);
+    ticketService.getTickets.and.returnValue(of([]));
+
+    setupComponent();
+
+    expect(component.userRole).toBe(UserRole.Reporter);
+  });
 });

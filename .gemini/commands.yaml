@@ -1083,3 +1083,30 @@ commands:
            - Ensure the card takes up the full width on mobile screens (`width: 100%`) and has a reasonable `max-width` on desktop.
 
       Provide the full code for all modified files.
+  frontend:refactor-tests-unit-auth-logic:
+    prompt: |
+      As an Angular developer, your task is to refactor existing frontend unit tests to improve type safety and correctly handle `AuthService` logic, specifically addressing issues in `TicketDetailsComponent` and `TicketListComponent` tests.
+
+      **Context Files:**
+      {{file "frontend/src/app/components/ticket-details/ticket-details.component.spec.ts"}}
+      {{file "frontend/src/app/components/ticket-list/ticket-list.component.spec.ts"}}
+      {{file "frontend/src/app/services/auth.service.ts"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+
+      **Instructions:**
+
+      **1. Refactor `AuthService` Mock in `ticket-details.component.spec.ts`:**
+         - Locate the `AuthService` mock definition within `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`.
+         - Replace the `unknown as AuthService` casting with a properly structured mock object. This mock object should explicitly define the methods and properties of `AuthService` that are used by `TicketDetailsComponent` (e.g., `getSnapshotUserRole`, `currentUserRole$`).
+         - Ensure the mock provides realistic return values for these methods (e.g., a `BehaviorSubject` for `currentUserRole$`).
+
+      **2. Add Test for `userRole` Fallback in `ticket-list.component.spec.ts`:**
+         - In `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`, add a new test method, for example, `should set userRole to Reporter when authService returns null`.
+         - Inside this test:
+           - Configure the `AuthService` mock so that `getSnapshotUserRole()` returns `null`.
+           - Create an instance of `TicketListComponent`.
+           - Assert that `component.userRole` is equal to `UserRole.Reporter`, verifying the fallback mechanism.
+
+      Provide the full TypeScript code for both modified files:
+      1. `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`
+      2. `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`
