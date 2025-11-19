@@ -636,6 +636,41 @@ Provide the full TypeScript code for all the files mentioned above.
 
 """
 
+[commands."frontend:make-storybook-presentational-stories"]
+prompt = """
+As an Angular developer, your task is to create Storybook stories for the `PriorityBadgeComponent` and `StatusLabelComponent`. These stories should demonstrate the components with different input values and provide interactive controls.
+
+**Context Files:**
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Create Story for `PriorityBadgeComponent` (`frontend/src/app/components/priority-badge/priority-badge.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `PriorityBadgeComponent` and `TicketPriority` enum.
+   - Define the `meta` object:
+     - `component: PriorityBadgeComponent`
+     - `title: 'Components/PriorityBadge'`
+     - `tags: ['autodocs']`
+     - `argTypes`: Define controls for the `priority` input, allowing users to select `low`, `medium`, or `high`.
+   - Create individual stories (e.g., `Low`, `Medium`, `High`) demonstrating each priority level.
+
+**2. Create Story for `StatusLabelComponent` (`frontend/src/app/components/status-label/status-label.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `StatusLabelComponent` and `TicketStatus` enum.
+   - Define the `meta` object:
+     - `component: StatusLabelComponent`
+     - `title: 'Components/StatusLabel'`
+     - `tags: ['autodocs']`
+     - `argTypes`: Define controls for the `status` input, allowing users to select `new`, `in_progress`, or `resolved`.
+   - Create individual stories (e.g., `New`, `InProgress`, `Resolved`) demonstrating each status level.
+
+Provide the full TypeScript code for both new Storybook story files.
+
+"""
+
 [commands."frontend:make-styles-and-presentational-components"]
 prompt = """
 As an Angular developer, your task is to establish a basic theme file and create two simple, reusable presentational components: `PriorityBadge` and `StatusLabel`.
