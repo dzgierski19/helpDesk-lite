@@ -4,6 +4,7 @@ test('should allow a user to log in, view the ticket list, and see ticket detail
   await page.addInitScript(() => {
     window.localStorage.setItem('useMockData', 'true');
   });
+  await page.setViewportSize({ width: 600, height: 900 });
 
   await page.goto('/');
   await expect(page).toHaveURL(/\/login$/);
@@ -14,11 +15,11 @@ test('should allow a user to log in, view the ticket list, and see ticket detail
   const ticketList = page.locator('.ticket-table, .mobile-view app-ticket-card');
   await expect(ticketList.first()).toBeVisible();
 
-  const viewDetailsButton = page.locator('button:has-text("View Details")').first();
-  if (await viewDetailsButton.count()) {
-    await viewDetailsButton.click();
+  const mobileDetailsButton = page.getByRole('button', { name: 'View Details' }).first();
+  if (await mobileDetailsButton.isVisible()) {
+    await mobileDetailsButton.click();
   } else {
-    await page.getByRole('button', { name: /View ticket/i }).first().click();
+    await page.locator('button[aria-label=\"View ticket\"]').first().click();
   }
 
   await expect(page).toHaveURL(/\/tickets\/\d+$/);
