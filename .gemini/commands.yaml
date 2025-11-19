@@ -940,15 +940,9 @@ commands:
 
       **2. `frontend/src/app/services/ui.service.spec.ts`:**
          - **Setup:** Configure `TestBed` with `MatSnackBarModule`. Create a mock for `MatSnackBar`.
-         - **`showLoader() should increment pending requests and emit true`**:
-           - Call `showLoader()`.
-           - Assert that `loading$` emits `true`.
-         - **`hideLoader() should decrement pending requests and emit false when counter is zero`**:
-           - Call `showLoader()` twice, then `hideLoader()` once. Assert `loading$` is still `true`.
-           - Call `hideLoader()` again. Assert `loading$` emits `false`.
-         - **`showSnackbar() should call MatSnackBar.open`**:
-           - Call `showSnackbar()`.
-           - Assert that the `snackBar.open` mock was called with the correct arguments.
+         - **`showLoader() should emit true from loading$`**: Call `showLoader()` and assert that `loading$` emits `true`.
+         - **`hideLoader() should emit false from loading$`**: Call `showLoader()` then `hideLoader()` and assert that `loading$` emits `false`.
+         - **`showSnackbar() should call MatSnackBar.open`**: Call `showSnackbar()` and assert that the `snackBar.open` mock was called with the correct arguments.
 
       **3. `frontend/src/app/guards/auth.guard.spec.ts`:**
          - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `AuthService` and `Router`.
@@ -1181,3 +1175,58 @@ commands:
            - Assert that `uiService.hideLoader` was called.
 
       Provide the full TypeScript code for all five new `.spec.ts` files.
+  frontend:make-e2e-login-flow:
+    prompt: |
+      As a frontend developer, your task is to set up End-to-End (E2E) testing with Playwright and create a basic login and navigation flow test.
+
+      **Context Files:**
+      {{file "frontend/package.json"}}
+      {{file "frontend/src/app/components/login/login.component.html"}}
+      {{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+      {{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+
+      **Instructions:**
+
+      **1. Install and Configure Playwright:**
+         - Run `npx playwright install --with-deps` inside the `frontend` directory to install Playwright and its browser dependencies.
+         - Create a `playwright.config.ts` file in the `frontend` directory. Configure it to:
+           - Use a `baseURL` of `http://localhost:4200`.
+           - Point to test files in an `e2e` directory.
+           - Include a `webServer` block to automatically start the Angular dev server (`npm run start`) before running tests. This is crucial for CI.
+
+      **2. Update `package.json`:**
+         - In `frontend/package.json`, add a new script: `"e2e": "playwright test"`.
+
+      **3. Create the E2E Test File (`frontend/e2e/login-flow.spec.ts`):**
+         - Create a new test file for the login and navigation flow.
+         - Write a test case named 'should allow a user to log in, view the ticket list, and see ticket details'.
+         - The test should perform the following steps:
+           a. **Navigate to Login:** Go to the base URL (`/`). The app should redirect to `/login`.
+           b. **Select Role:** Find the button for the 'Agent' role and click it.
+           c. **Verify Ticket List:**
+              - Assert that the URL is now `/tickets`.
+              - Assert that the ticket list container (e.g., a `mat-table` or `.mobile-view`) is visible.
+           d. **Navigate to Ticket Details:**
+              - Find the first ticket in the list (either a table row or a ticket card) and click its "View Details" button/link.
+           e. **Verify Ticket Details:**
+              - Assert that the URL matches the pattern `/tickets/\d+`.
+              - Assert that a key element of the details page, like the `mat-card-title` containing the ticket title, is visible.
+
+      Provide the full code for the new `playwright.config.ts` and `frontend/e2e/login-flow.spec.ts` files, and the modified `frontend/package.json`.
+  ci:add-e2e-tests:
+    prompt: |
+      As a DevOps engineer, your task is to update the existing GitHub Actions workflow to include a new step for running frontend End-to-End (E2E) tests with Playwright.
+
+      **Context File:**
+      {{file ".github/workflows/ci.yml"}}
+
+      **Instructions:**
+
+      1.  Locate the `frontend-tests` job in the `.github/workflows/ci.yml` file.
+      2.  After the step named "Run unit tests", add a new step to execute the E2E tests.
+      3.  This new step should have the following properties:
+          - `name`: "Run E2E tests"
+          - `working-directory`: "frontend"
+          - `run`: "npm run e2e"
+
+      Provide the full, updated YAML content for the `.github/workflows/ci.yml` file.

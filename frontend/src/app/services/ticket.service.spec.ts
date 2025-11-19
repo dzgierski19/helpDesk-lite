@@ -22,6 +22,7 @@ describe('TicketService', () => {
 
     service = TestBed.inject(TicketService);
     httpMock = TestBed.inject(HttpTestingController);
+    localStorage.removeItem('useMockData');
   });
 
   afterEach(() => {

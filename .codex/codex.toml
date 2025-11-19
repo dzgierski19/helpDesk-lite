@@ -533,6 +533,47 @@ Provide the full TypeScript code for all four new or updated `.spec.ts` files.
 
 """
 
+[commands."frontend:make-e2e-login-flow"]
+prompt = """
+As a frontend developer, your task is to set up End-to-End (E2E) testing with Playwright and create a basic login and navigation flow test.
+
+**Context Files:**
+{{file "frontend/package.json"}}
+{{file "frontend/src/app/components/login/login.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+
+**Instructions:**
+
+**1. Install and Configure Playwright:**
+   - Run `npx playwright install --with-deps` inside the `frontend` directory to install Playwright and its browser dependencies.
+   - Create a `playwright.config.ts` file in the `frontend` directory. Configure it to:
+     - Use a `baseURL` of `http://localhost:4200`.
+     - Point to test files in an `e2e` directory.
+     - Include a `webServer` block to automatically start the Angular dev server (`npm run start`) before running tests. This is crucial for CI.
+
+**2. Update `package.json`:**
+   - In `frontend/package.json`, add a new script: `"e2e": "playwright test"`.
+
+**3. Create the E2E Test File (`frontend/e2e/login-flow.spec.ts`):**
+   - Create a new test file for the login and navigation flow.
+   - Write a test case named 'should allow a user to log in, view the ticket list, and see ticket details'.
+   - The test should perform the following steps:
+     a. **Navigate to Login:** Go to the base URL (`/`). The app should redirect to `/login`.
+     b. **Select Role:** Find the button for the 'Agent' role and click it.
+     c. **Verify Ticket List:**
+        - Assert that the URL is now `/tickets`.
+        - Assert that the ticket list container (e.g., a `mat-table` or `.mobile-view`) is visible.
+     d. **Navigate to Ticket Details:**
+        - Find the first ticket in the list (either a table row or a ticket card) and click its "View Details" button/link.
+     e. **Verify Ticket Details:**
+        - Assert that the URL matches the pattern `/tickets/\d+`.
+        - Assert that a key element of the details page, like the `mat-card-title` containing the ticket title, is visible.
+
+Provide the full code for the new `playwright.config.ts` and `frontend/e2e/login-flow.spec.ts` files, and the modified `frontend/package.json`.
+
+"""
+
 [commands."frontend:make-interceptor"]
 prompt = """
 As an an Angular developer, your task is to create an HTTP Interceptor that automatically adds the `X-USER-ROLE` header to outgoing API requests, based on the currently selected role from the `AuthService`. You also need to register this interceptor in `app.module.ts`.
@@ -849,6 +890,80 @@ As an Angular developer, your task is to establish a basic theme file and create
      - Define modifier classes `.status-new`, `.status-in_progress`, `.status-resolved` with distinct text or background colors.
 
 Provide the full code for all new and modified files.
+
+"""
+
+[commands."frontend:make-tests-ui-guards"]
+prompt = """
+As an Angular developer, your task is to create a suite of unit tests for UI services, guards, a key component, and an interceptor to ensure their correctness and reliability.
+
+**Context Files:**
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.ts"}}
+{{file "frontend/src/app/guards/auth.guard.ts"}}
+{{file "frontend/src/app/guards/role.guard.ts"}}
+{{file "frontend/src/app/interceptors/loader.interceptor.ts"}}
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/models/ticket.model.ts"}}
+
+**Instructions:**
+
+Create the following `.spec.ts` files with the specified tests. Use `TestBed` for configuration and provide mocks for all dependencies.
+
+**1. `frontend/src/app/services/ui.service.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `MatSnackBarModule`. Create a mock for `MatSnackBar`.
+   - **`showLoader() should emit true from loading$`**: Call `showLoader()` and assert that `loading$` emits `true`.
+   - **`hideLoader() should emit false from loading$`**: Call `showLoader()` then `hideLoader()` and assert that `loading$` emits `false`.
+   - **`showSnackbar() should call MatSnackBar.open`**: Call `showSnackbar()` and assert that the `snackBar.open` mock was called with the correct arguments.
+
+**2. `frontend/src/app/components/ticket-card/ticket-card.component.spec.ts`:**
+   - **Setup:** Configure `TestBed` and declare required child components like `PriorityBadgeComponent` and `StatusLabelComponent`.
+   - **`should emit viewDetails with ticket id on viewDetails click`**:
+     - Set the component's `ticket` input.
+     - Spy on the `viewDetails` event emitter.
+     - Trigger a click on the "View Details" button.
+     - Assert that `viewDetails.emit` was called with the correct ticket ID.
+   - **`should truncate long descriptions`**:
+     - Provide a ticket with a description longer than the truncation limit.
+     - Trigger change detection.
+     - Assert that the `truncatedDescription` getter returns a string that is shorter than the original and ends with '...'.
+
+**3. `frontend/src/app/guards/auth.guard.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `AuthService` and `Router`.
+   - **`should allow activation when user is logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return a valid role.
+     - Execute the guard and assert the result is `true`.
+   - **`should deny activation and redirect to /login when user is not logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return `null`.
+     - Mock `router.parseUrl()` to return a `UrlTree`.
+     - Execute the guard and assert that `router.parseUrl` was called with `/login`.
+
+**4. `frontend/src/app/guards/role.guard.spec.ts`:**
+   - **Setup:** `TestBed`. Mock for `AuthService`.
+   - **`should allow activation when user role is in the allowed list`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Admin`.
+     - Create a mock `ActivatedRouteSnapshot` with `data: { roles: [UserRole.Admin, UserRole.Agent] }`.
+     - Execute the guard and assert the result is `true`.
+   - **`should deny activation when user role is not in the allowed list`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Reporter`.
+     - Create a mock `ActivatedRouteSnapshot` with `data: { roles: [UserRole.Admin, UserRole.Agent] }`.
+     - Execute the guard and assert the result is `false`.
+
+**5. `frontend/src/app/interceptors/loader.interceptor.spec.ts`:**
+   - **Setup:** `TestBed` with `HttpClientTestingModule`. Mocks for `UiService`.
+   - **`should show and hide loader for a successful request`**:
+     - Make a test HTTP call.
+     - Assert that `uiService.showLoader` was called.
+     - Flush the mock request.
+     - Assert that `uiService.hideLoader` was called.
+   - **`should show snackbar and hide loader on error`**:
+     - Make a test HTTP call that returns an error.
+     - Assert that `uiService.showLoader` was called.
+     - Assert that `uiService.showSnackbar` was called with an error message.
+     - Assert that `uiService.hideLoader` was called.
+
+Provide the full TypeScript code for all five new `.spec.ts` files.
 
 """
 
