@@ -149,10 +149,12 @@ Validation errors return HTTP 422 with JSON bodies (e.g., `{"message":"The title
 ## LLM Workflow
 Prompt-Driven Development (PDD) keeps code generation deterministic:
 
-1. Every change begins as a Gemini prompt stored in `.gemini/commands.yaml`. Each prompt references `project_spec.md`, reinforcing it as the source of truth.
-2. `codex run <command>` executes the prompt, producing code via OpenAI Codex. One-off executions can be run through `npm run codex -- <command>`.
-3. Logs are persisted to `notes/llm/` for auditing and future learning.
-4. Run `npm run sync:commands` whenever `.gemini/commands.yaml` changes to mirror commands into `.codex/codex.toml`.
+1. **Prompt definition (Gemini CLI)** – Every change begins with a Gemini iteration; the final prompt is captured in `.gemini/commands.yaml` (always referencing `{{file "project_spec.md"}}`).
+2. **Optional Codex sync** – `npm run sync:commands` converts the Gemini entry into `.codex/codex.toml` if we plan to run `codex`.
+3. **Code generation (Codex CLI)** – `codex run <command>` (or `npm run codex -- <command>`) asks the agent to produce backend/frontend/Storybook code.
+4. **Code review** – The output is reviewed (with Codex’s help or manually) and any fixes are applied.
+5. **Finalization** – Once accepted, the change is committed and Gemini writes a summary in `notes/llm/<prompt>-${timestamp}.md`.
+6. **Archiving** – We don’t commit the entire `notes/llm` directory; a single representative log (e.g., `notes/llm/backend_refactor-tests-unit-2025-11-18T20-29-00.058Z.md`) is enough to show how the LLM performed the task.
 
 This process ensures Gemini prompts and Codex execution stay aligned, giving us reproducible generation for backend, frontend, and Storybook features.
 
