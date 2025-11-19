@@ -456,7 +456,7 @@ As a Laravel developer, your task is to refactor existing unit tests to use mode
 
 **2. Refactor `ModelRelationshipsTest.php`:**
    - Modify the existing `backend/tests/Unit/ModelRelationshipsTest.php` file.
-   - **Use the new factory:** In the `test_ticket_has_many_status_changes` method, replace the `TicketStatusChange::create()` call with the new `TicketStatusChangeFactory`.
+   - **Use the new factory:** In the `test_ticket_has-many-status-changes` method, replace the `TicketStatusChange::create()` call with the new `TicketStatusChangeFactory`.
    - **Improve `hasMany` assertions:**
      - In `test_user_has-many-created-tickets`, after asserting the count, add an assertion to verify the inverse relationship. Iterate through the collection and check that each ticket's `creator` is the original user. Example: `$user->ticketsCreated->each(fn (Ticket $ticket) => $this->assertTrue($ticket->creator->is($user)));`
      - In `test_user_has-many-assigned-tickets`, do the same for the `assignee` relationship. Example: `$user->ticketsAssigned->each(fn (Ticket $ticket) => $this->assertTrue($ticket->assignee->is($user)));`
@@ -899,5 +899,45 @@ As an Angular developer, your task is to create a `TicketListComponent` that dis
      - Add basic styling to ensure the table takes up the full width.
 
 Provide the full code for all three new files: `ticket-list.component.ts`, `ticket-list.component.html`, and `ticket-list.component.scss`.
+
+"""
+
+[commands."frontend:make-ui-state-components"]
+prompt = """
+As an Angular developer, your task is to implement global UI state management for loading indicators and snackbar notifications. This involves creating a UI service, a loader component, and integrating the loader into the main application template.
+
+**Context Files:**
+{{file "frontend/src/app/app.component.html"}}
+{{file "frontend/src/app/app.module.ts"}} # For context on where to suggest module imports/declarations
+
+**Instructions:**
+
+**1. Create `UiService` (`frontend/src/app/services/ui.service.ts`):**
+   - Create an injectable service (`@Injectable({ providedIn: 'root' })`).
+   - Inject `MatSnackBar` from `@angular/material/snack-bar`.
+   - Implement a public `loading$` property as a `BehaviorSubject<boolean>` initialized to `false`.
+   - Implement `showLoader()` method: sets `this.loading$.next(true)`.
+   - Implement `hideLoader()` method: sets `this.loading$.next(false)`.
+   - Implement `showSnackbar(message: string, action: string = 'Zamknij', duration: number = 3000)` method: uses `this.snackBar.open(message, action, { duration })`.
+
+**2. Create `LoaderComponent` (`frontend/src/app/components/loader/loader.component.ts`, `.html`, `.scss`):**
+   - **`loader.component.ts`:**
+     - Create a component (`@Component(...)`).
+     - Inject `UiService`.
+     - Create a public property `isLoading$: Observable<boolean>` initialized with `this.uiService.loading$`.
+   - **`loader.component.html`:**
+     - Use `*ngIf="isLoading$ | async"` to conditionally display the loader.
+     - Inside the `*ngIf` block, display a `mat-spinner`.
+     - Wrap the `mat-spinner` in a `div` that acts as a full-screen overlay.
+   - **`loader.component.scss`:**
+     - Style the overlay `div` to be `position: fixed`, `top: 0`, `left: 0`, `width: 100%`, `height: 100%`.
+     - Use `display: flex`, `justify-content: center`, `align-items: center` to center the spinner.
+     - Add a semi-transparent background (e.g., `background-color: rgba(0, 0, 0, 0.3)`).
+     - Set a high `z-index` (e.g., `z-index: 9999`).
+
+**3. Modify `app.component.html` (`frontend/src/app/app.component.html`):**
+   - Add the `<app-loader></app-loader>` tag at the very end of the component's template, just before the closing main tag (e.g., `</main>` or `</div>`). This ensures it overlays all other content.
+
+Provide the full TypeScript/HTML/SCSS code for all new and modified files.
 
 """
