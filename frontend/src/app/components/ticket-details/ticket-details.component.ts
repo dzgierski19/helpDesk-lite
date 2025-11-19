@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject, of } from 'rxjs';
-import { catchError, finalize, map, takeUntil, tap } from 'rxjs/operators';
+import { catchError, finalize, map, takeUntil, tap, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
+import { AuthUser } from '../../models/auth-user.model';
 
 @Component({
   selector: 'app-ticket-details',
@@ -46,17 +47,15 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
     this.currentUserRole$ = this.authService.currentUser$.pipe(map((user) => user?.role ?? null));
 
     this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        filter((user): user is AuthUser => !!user),
+        distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
+        takeUntil(this.destroy$),
+      )
       .subscribe((user) => {
-        this.currentUserRole = user?.role ?? null;
-
-        if (user) {
-          this.refreshTicket();
-          this.externalUserInfo$ = this.ticketService.getExternalUserInfo();
-        } else {
-          this.ticket$ = of(undefined);
-          this.ticketFound = false;
-        }
+        this.currentUserRole = user.role;
+        this.refreshTicket();
+        this.externalUserInfo$ = this.ticketService.getExternalUserInfo();
       });
   }
 

@@ -7,12 +7,14 @@ import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
 import { UserRole } from '../../models/enums';
+import { AuthUser } from '../../models/auth-user.model';
 
 describe('TicketListComponent', () => {
   let fixture: ComponentFixture<TicketListComponent>;
   let component: TicketListComponent;
   let ticketService: jasmine.SpyObj<TicketService>;
   let authService: jasmine.SpyObj<AuthService>;
+  let currentUserSubject: BehaviorSubject<AuthUser | null>;
   let uiService: jasmine.SpyObj<UiService>;
   let loadingSubject: BehaviorSubject<boolean>;
 
@@ -26,9 +28,12 @@ describe('TicketListComponent', () => {
     ticketService = jasmine.createSpyObj<TicketService>('TicketService', [
       'getTickets',
     ]);
+    currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
     authService = jasmine.createSpyObj<AuthService>('AuthService', [
-      'getSnapshotUserRole',
+      'isAuthenticated',
     ]);
+    (authService as any).currentUser$ = currentUserSubject.asObservable();
+    authService.isAuthenticated.and.returnValue(true);
     loadingSubject = new BehaviorSubject<boolean>(false);
     uiService = jasmine.createSpyObj<UiService>(
       'UiService',
@@ -52,10 +57,11 @@ describe('TicketListComponent', () => {
   }));
 
   it('should set reporter columns for reporter role', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Reporter);
     ticketService.getTickets.and.returnValue(of([]));
 
     setupComponent();
+    currentUserSubject.next(createUser(UserRole.Reporter));
+    fixture.detectChanges();
 
     expect(component.displayedColumns).toEqual([
       'id',
@@ -67,10 +73,11 @@ describe('TicketListComponent', () => {
   });
 
   it('should set admin columns for admin role', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Admin);
     ticketService.getTickets.and.returnValue(of([]));
 
     setupComponent();
+    currentUserSubject.next(createUser(UserRole.Admin));
+    fixture.detectChanges();
 
     expect(component.displayedColumns).toEqual([
       'id',
@@ -84,20 +91,32 @@ describe('TicketListComponent', () => {
   });
 
   it('should call getTickets on init', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Reporter);
     ticketService.getTickets.and.returnValue(of([]));
 
     setupComponent();
+    currentUserSubject.next(createUser(UserRole.Reporter));
+    fixture.detectChanges();
 
-    expect(ticketService.getTickets).toHaveBeenCalled();
+    expect(ticketService.getTickets).toHaveBeenCalledTimes(1);
   });
 
   it('should set userRole to Reporter when authService returns null', () => {
-    authService.getSnapshotUserRole.and.returnValue(null);
+    authService.isAuthenticated.and.returnValue(false);
     ticketService.getTickets.and.returnValue(of([]));
 
     setupComponent();
+    component.applyFilters();
 
+    expect(ticketService.getTickets).toHaveBeenCalledTimes(1);
     expect(component.userRole).toBe(UserRole.Reporter);
   });
+
+  function createUser(role: UserRole): AuthUser {
+    return {
+      id: 1,
+      name: role,
+      email: `${role}@test.com`,
+      role,
+    };
+  }
 });

@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable, EMPTY, Subject, of } from 'rxjs';
-import { finalize, catchError, takeUntil } from 'rxjs/operators';
+import { finalize, catchError, takeUntil, distinctUntilChanged, filter } from 'rxjs/operators';
+import { AuthUser } from '../../models/auth-user.model';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
@@ -40,12 +41,12 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        filter((user): user is AuthUser => !!user),
+        distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
+        takeUntil(this.destroy$),
+      )
       .subscribe((user) => {
-        if (!user) {
-          return;
-        }
-
         this.userRole = user.role;
         this.updateDisplayedColumns();
         this.applyFilters();
@@ -62,10 +63,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    if (!this.authService.isAuthenticated()) {
-      return;
-    }
-
     const { status, priority, tag } = this.filterForm.value as {
       status: TicketStatus | null;
       priority: TicketPriority | null;

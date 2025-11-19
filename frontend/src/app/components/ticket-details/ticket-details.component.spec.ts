@@ -7,12 +7,13 @@ import { BehaviorSubject, of } from 'rxjs';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { UiService } from '../../services/ui.service';
+import { AuthUser } from '../../models/auth-user.model';
 
 describe('TicketDetailsComponent', () => {
   let component: TicketDetailsComponent;
   let fixture: ComponentFixture<TicketDetailsComponent>;
   let ticketService: jasmine.SpyObj<TicketService>;
-  let roleSubject: BehaviorSubject<UserRole | null>;
+  let currentUserSubject: BehaviorSubject<AuthUser | null>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
   let uiServiceMock: jasmine.SpyObj<UiService>;
 
@@ -26,14 +27,21 @@ describe('TicketDetailsComponent', () => {
     ticketService.getTicket.and.returnValue(of({} as Ticket));
     ticketService.getExternalUserInfo.and.returnValue(of({ name: 'External' }));
 
-    roleSubject = new BehaviorSubject<UserRole | null>(UserRole.Agent);
+    currentUserSubject = new BehaviorSubject<AuthUser | null>({
+      id: 1,
+      name: 'Agent',
+      email: 'agent@test.com',
+      role: UserRole.Agent,
+    });
     authServiceMock = jasmine.createSpyObj<AuthService>(
       'AuthService',
-      ['login', 'logout', 'getCurrentUserRole', 'getSnapshotUserRole'],
-      { currentUserRole$: roleSubject.asObservable() }
+      ['login', 'logout', 'init', 'getSnapshotUser', 'getSnapshotUserRole', 'isAuthenticated'],
+      {
+        currentUser$: currentUserSubject,
+      }
     );
-    authServiceMock.getCurrentUserRole.and.returnValue(roleSubject.asObservable());
-    authServiceMock.getSnapshotUserRole.and.callFake(() => roleSubject.value);
+    authServiceMock.getSnapshotUserRole.and.callFake(() => currentUserSubject.value?.role ?? null);
+    authServiceMock.isAuthenticated.and.returnValue(true);
     uiServiceMock = jasmine.createSpyObj<UiService>('UiService', [
       'showLoader',
       'hideLoader',
@@ -66,7 +74,12 @@ describe('TicketDetailsComponent', () => {
       suggested_tags: ['api', 'urgent'],
     };
     ticketService.getTriageSuggestion.and.returnValue(of(suggestion));
-    roleSubject.next(UserRole.Agent);
+    currentUserSubject.next({
+      id: 2,
+      name: 'Agent',
+      email: 'agent@test.com',
+      role: UserRole.Agent,
+    });
 
     component.loadTriageSuggestion(1);
 
@@ -83,7 +96,12 @@ describe('TicketDetailsComponent', () => {
     ticketService.updateTicket.and.returnValue(of({} as Ticket));
     ticketService.getTicket.calls.reset();
     component.triageSuggestion = suggestion;
-    roleSubject.next(UserRole.Admin);
+    currentUserSubject.next({
+      id: 3,
+      name: 'Admin',
+      email: 'admin@test.com',
+      role: UserRole.Admin,
+    });
 
     component.acceptTriageSuggestion(1);
 

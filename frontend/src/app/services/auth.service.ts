@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
 import { AuthUser } from '../models/auth-user.model';
+import { UserRole } from '../models/enums';
 
 @Injectable({
   providedIn: 'root'
@@ -77,6 +78,9 @@ export class AuthService {
       return null;
     }
     return localStorage.getItem(this.tokenStorageKey);
+  }
+  getSnapshotUserRole(): UserRole | null {
+    return this.currentUser$.value?.role ?? null;
   }
 
   private fetchCurrentUser(): Observable<AuthUser> {
