@@ -712,6 +712,52 @@ Provide the full code for all new and modified files.
 
 """
 
+[commands."frontend:make-theme-documentation-story"]
+prompt = """
+As an Angular developer using Storybook, your task is to create a documentation-only story using MDX to showcase the project's design system, specifically its color palette and typography.
+
+**Context File (for reference):**
+{{file "frontend/src/styles/_theme.scss"}}
+
+**Instructions:**
+
+Create a new file named `frontend/src/stories/Theme.mdx`. This file should contain the following:
+
+1.  **Meta Block:**
+    - Import `Meta`, `ColorPalette`, and `ColorItem` from `@storybook/blocks`.
+    - Define the story's metadata: `<Meta title="Design System/Theme" />`
+
+2.  **Title:**
+    - Add a main title: `# Theme Documentation`
+
+3.  **Color Palette Section:**
+    - Add a subtitle: `## Color Palette`
+    - Use the `ColorPalette` and `ColorItem` blocks to display the colors defined in `_theme.scss`.
+    - Create a `ColorItem` for each of the following:
+      - Title: `Primary`, Subtitle: `$primary-color`, Colors: `{ Primary: '#3f51b5' }`
+      - Title: `Accent`, Subtitle: `$accent-color`, Colors: `{ Accent: '#ff4081' }`
+      - Title: `Warn`, Subtitle: `$warn-color`, Colors: `{ Warn: '#f44336' }`
+      - Title: `Success`, Subtitle: `$success-color`, Colors: `{ Success: '#4caf50' }`
+      - Title: `Info`, Subtitle: `$info-color`, Colors: `{ Info: '#2196f3' }`
+      - Title: `Text`, Subtitle: `$text-color`, Colors: `{ Text: '#212121' }`
+      - Title: `Background`, Subtitle: `$background-color`, Colors: `{ Background: '#f5f5f5' }`
+
+4.  **Typography Section:**
+    - Add a subtitle: `## Typography`
+    - Provide examples of standard HTML typography elements to demonstrate the default global styles.
+    - Include the following examples:
+      ```html
+      <h1>Heading 1</h1>
+      <h2>Heading 2_</h2>
+      <h3>Heading 3</h3>
+      <p>This is a paragraph of text. It is used for long-form content. <strong>This text is bold.</strong> <em>This text is italic.</em></p>
+      <a>This is a link.</a>
+      ```
+
+Provide the full content for the new `frontend/src/stories/Theme.mdx` file.
+
+"""
+
 [commands."frontend:make-ticket-card-component-and-story"]
 prompt = """
 As an Angular developer, your task is to create a `TicketCardComponent` and its corresponding Storybook stories. This component will display a summary of a ticket and allow navigation to its details.
