@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subscription, of } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { catchError, finalize, map, takeUntil, tap } from 'rxjs/operators';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
@@ -30,7 +30,7 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
 
   private ticketId: number | null = null;
   private currentUserRole: UserRole | null = null;
-  private roleSubscription?: Subscription;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -43,17 +43,26 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.ticketId = idParam ? Number(idParam) : null;
+    this.currentUserRole$ = this.authService.currentUser$.pipe(map((user) => user?.role ?? null));
 
-    this.refreshTicket();
-    this.externalUserInfo$ = this.ticketService.getExternalUserInfo();
-    this.currentUserRole$ = this.authService.currentUserRole$;
-    this.roleSubscription = this.authService.currentUserRole$.subscribe((role) => {
-      this.currentUserRole = role;
-    });
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.currentUserRole = user?.role ?? null;
+
+        if (user) {
+          this.refreshTicket();
+          this.externalUserInfo$ = this.ticketService.getExternalUserInfo();
+        } else {
+          this.ticket$ = of(undefined);
+          this.ticketFound = false;
+        }
+      });
   }
 
   ngOnDestroy(): void {
-    this.roleSubscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadTriageSuggestion(ticketId: number): void {
@@ -113,6 +122,10 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
   }
 
   private refreshTicket(): void {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
     if (this.ticketId !== null) {
       this.ticketFound = true;
       this.uiService.showLoader();

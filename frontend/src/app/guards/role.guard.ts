@@ -8,11 +8,11 @@ import { UserRole } from '../models/enums';
 export const RoleGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const allowedRoles = (route.data['roles'] as UserRole[]) ?? [];
-  const currentRole = authService.getSnapshotUserRole();
+  const currentUser = authService.getSnapshotUser();
 
-  if (!currentRole) {
+  if (!currentUser) {
     return false;
   }
 
-  return allowedRoles.includes(currentRole);
+  return allowedRoles.includes(currentUser.role);
 };

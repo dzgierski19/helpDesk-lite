@@ -1,50 +1,104 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { UserRole } from '../models/enums';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
+import { AuthUser } from '../models/auth-user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly storageKey = 'userRole';
-  private readonly currentUserRoleSubject = new BehaviorSubject<UserRole | null>(null);
-  readonly currentUserRole$: Observable<UserRole | null> = this.currentUserRoleSubject.asObservable();
+  private readonly apiUrl = '/api';
+  private readonly tokenStorageKey = 'helpdeskAuthToken';
 
-  constructor() {
-    const storedRole = this.loadRoleFromStorage();
-    if (storedRole) {
-      this.currentUserRoleSubject.next(storedRole);
+  readonly currentUser$ = new BehaviorSubject<AuthUser | null>(null);
+  readonly isAuthenticated$ = new BehaviorSubject<boolean>(this.hasStoredToken());
+
+  constructor(private readonly http: HttpClient) {}
+
+  login(credentials: { email: string; password: string }): Observable<AuthUser> {
+    return this.http.post<{ token: string }>(`${this.apiUrl}/login`, credentials).pipe(
+      switchMap((response) => {
+        this.persistToken(response.token);
+        return this.fetchCurrentUser();
+      }),
+      tap((user) => {
+        this.currentUser$.next(user);
+        this.isAuthenticated$.next(true);
+      }),
+      catchError((error) => {
+        this.clearSession();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  logout(): Observable<void> {
+    const token = this.getAuthToken();
+
+    if (!token) {
+      this.clearSession();
+      return of(void 0);
     }
+
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+      finalize(() => this.clearSession())
+    );
   }
 
-  login(role: UserRole): void {
-    this.currentUserRoleSubject.next(role);
-    this.persistRole(role);
+  init(): Observable<AuthUser | null> {
+    if (!this.getAuthToken()) {
+      this.clearSession();
+      return of(null);
+    }
+
+    return this.fetchCurrentUser().pipe(
+      tap((user) => {
+        this.currentUser$.next(user);
+        this.isAuthenticated$.next(true);
+      }),
+      catchError(() => {
+        this.clearSession();
+        return of(null);
+      })
+    );
   }
 
-  logout(): void {
-    this.currentUserRoleSubject.next(null);
-    this.clearRole();
+  isAuthenticated(): boolean {
+    return this.isAuthenticated$.value || !!this.getAuthToken();
   }
 
-  getCurrentUserRole(): Observable<UserRole | null> {
-    return this.currentUserRole$;
+  getSnapshotUser(): AuthUser | null {
+    return this.currentUser$.value;
   }
 
-  getSnapshotUserRole(): UserRole | null {
-    return this.currentUserRoleSubject.value;
+  getAuthToken(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    return localStorage.getItem(this.tokenStorageKey);
   }
 
-  private loadRoleFromStorage(): UserRole | null {
-    const stored = localStorage.getItem(this.storageKey);
-    return stored ? (stored as UserRole) : null;
+  private fetchCurrentUser(): Observable<AuthUser> {
+    return this.http.get<AuthUser>(`${this.apiUrl}/user`);
   }
 
-  private persistRole(role: UserRole): void {
-    localStorage.setItem(this.storageKey, role);
+  private persistToken(token: string): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(this.tokenStorageKey, token);
   }
 
-  private clearRole(): void {
-    localStorage.removeItem(this.storageKey);
+  private clearSession(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.tokenStorageKey);
+    }
+    this.currentUser$.next(null);
+    this.isAuthenticated$.next(false);
+  }
+
+  private hasStoredToken(): boolean {
+    return !!this.getAuthToken();
   }
 }

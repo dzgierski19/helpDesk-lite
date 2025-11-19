@@ -6,7 +6,6 @@ import {
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthService } from '../services/auth.service';
-import { UserRole } from '../models/enums';
 
 describe('AuthInterceptor', () => {
   let httpMock: HttpTestingController;
@@ -14,7 +13,7 @@ describe('AuthInterceptor', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj('AuthService', ['getSnapshotUserRole']);
+    authService = jasmine.createSpyObj('AuthService', ['getAuthToken']);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -32,24 +31,24 @@ describe('AuthInterceptor', () => {
     httpMock.verify();
   });
 
-  it('should add X-USER-ROLE header when role exists', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Agent);
+  it('should add Authorization header when token exists', () => {
+    authService.getAuthToken.and.returnValue('test-token');
 
     httpClient.get('/test').subscribe();
 
     const req = httpMock.expectOne('/test');
-    expect(req.request.headers.has('X-USER-ROLE')).toBeTrue();
-    expect(req.request.headers.get('X-USER-ROLE')).toBe(UserRole.Agent);
+    expect(req.request.headers.has('Authorization')).toBeTrue();
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush({});
   });
 
-  it('should NOT add X-USER-ROLE header when role is null', () => {
-    authService.getSnapshotUserRole.and.returnValue(null);
+  it('should NOT add Authorization header when token is missing', () => {
+    authService.getAuthToken.and.returnValue(null);
 
     httpClient.get('/test-no-role').subscribe();
 
     const req = httpMock.expectOne('/test-no-role');
-    expect(req.request.headers.has('X-USER-ROLE')).toBeFalse();
+    expect(req.request.headers.has('Authorization')).toBeFalse();
     req.flush({});
   });
 });

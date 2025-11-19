@@ -10,14 +10,21 @@
     </div>
 
     <nav class="app-actions">
-      <a class="login-link" routerLink="/login">
-        <span class="login-icon" aria-hidden="true">🔐</span>
-        Login
-      </a>
-      <button class="role-button" type="button" (click)="goToLogin()">
-        <span aria-hidden="true">↺</span>
-        Switch role
-      </button>
+      <ng-container *ngIf="(isAuthenticated$ | async); else loggedOut">
+        <div class="user-summary" *ngIf="currentUser$ | async as currentUser">
+          <div class="user-name">{{ currentUser.name }}</div>
+          <div class="user-role">{{ currentUser.role | titlecase }}</div>
+        </div>
+        <button class="logout-button" type="button" (click)="onLogout()">
+          Logout
+        </button>
+      </ng-container>
+      <ng-template #loggedOut>
+        <a class="login-link" routerLink="/login">
+          <span class="login-icon" aria-hidden="true">🔐</span>
+          Login
+        </a>
+      </ng-template>
     </nav>
   </header>
 

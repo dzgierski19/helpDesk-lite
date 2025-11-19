@@ -9,7 +9,7 @@ describe('RoleGuard', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj('AuthService', ['getSnapshotUserRole']);
+    authService = jasmine.createSpyObj('AuthService', ['getSnapshotUser']);
 
     TestBed.configureTestingModule({
       providers: [{ provide: AuthService, useValue: authService }],
@@ -20,7 +20,7 @@ describe('RoleGuard', () => {
     TestBed.runInInjectionContext(() => RoleGuard(route as ActivatedRouteSnapshot, {} as any));
 
   it('should allow activation when user role is in the allowed list', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Admin);
+    authService.getSnapshotUser.and.returnValue({ id: 1, name: 'Admin', email: 'admin@test.com', role: UserRole.Admin });
     const route = { data: { roles: [UserRole.Admin, UserRole.Agent] } };
 
     const result = executeGuard(route);
@@ -29,7 +29,7 @@ describe('RoleGuard', () => {
   });
 
   it('should deny activation when user role is not in the allowed list', () => {
-    authService.getSnapshotUserRole.and.returnValue(UserRole.Reporter);
+    authService.getSnapshotUser.and.returnValue({ id: 2, name: 'Reporter', email: 'reporter@test.com', role: UserRole.Reporter });
     const route = { data: { roles: [UserRole.Admin, UserRole.Agent] } };
 
     const result = executeGuard(route);

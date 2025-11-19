@@ -1,23 +1,34 @@
 import { TestBed } from '@angular/core/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { UserRole } from '../models/enums';
+import { AuthUser } from '../models/auth-user.model';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let httpMock: HttpTestingController;
   let store: Record<string, string>;
   let getItemSpy: jasmine.Spy;
   let setItemSpy: jasmine.Spy;
   let removeItemSpy: jasmine.Spy;
-  const storageKey = 'userRole';
-
-  const createService = () => {
-    service = TestBed.inject(AuthService);
-    return service;
+  const tokenKey = 'helpdeskAuthToken';
+  const mockUser: AuthUser = {
+    id: 1,
+    name: 'Admin User',
+    email: 'admin@helpdesk.test',
+    role: UserRole.Admin,
   };
 
   beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [AuthService],
+    });
+
     store = {};
-    TestBed.configureTestingModule({});
     getItemSpy = spyOn(window.localStorage, 'getItem').and.callFake((key: string) => {
       return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
     });
@@ -27,43 +38,71 @@ describe('AuthService', () => {
     removeItemSpy = spyOn(window.localStorage, 'removeItem').and.callFake((key: string) => {
       delete store[key];
     });
+
+    service = TestBed.inject(AuthService);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
-  it('should be created', () => {
-    createService();
-    expect(service).toBeTruthy();
+  afterEach(() => {
+    httpMock.verify();
   });
 
-  it('login() should set role and save to localStorage', () => {
-    createService();
+  it('should login, persist the token, and load the user profile', () => {
+    service.login({ email: 'admin@helpdesk.test', password: 'password' }).subscribe((user) => {
+      expect(user).toEqual(mockUser);
+      expect(service.currentUser$.value).toEqual(mockUser);
+      expect(service.isAuthenticated$.value).toBeTrue();
+    });
 
-    const nextSpy = jasmine.createSpy('roleSpy');
-    service.currentUserRole$.subscribe(nextSpy);
+    const loginReq = httpMock.expectOne('/api/login');
+    loginReq.flush({ token: 'token-123' });
+    expect(setItemSpy).toHaveBeenCalledWith(tokenKey, 'token-123');
 
-    service.login(UserRole.Agent);
-
-    expect(nextSpy).toHaveBeenCalledWith(UserRole.Agent);
-    expect(setItemSpy).toHaveBeenCalledWith(storageKey, UserRole.Agent);
+    const userReq = httpMock.expectOne('/api/user');
+    userReq.flush(mockUser);
   });
 
-  it('logout() should clear role and remove from localStorage', () => {
-    createService();
-    service.login(UserRole.Admin);
+  it('should clear session on logout', () => {
+    store[tokenKey] = 'token-123';
+    service.currentUser$.next(mockUser);
+    service.isAuthenticated$.next(true);
 
-    const nextSpy = jasmine.createSpy('roleSpy');
-    service.currentUserRole$.subscribe(nextSpy);
+    service.logout().subscribe();
 
-    service.logout();
+    const logoutReq = httpMock.expectOne('/api/logout');
+    logoutReq.flush({});
 
-    expect(nextSpy).toHaveBeenCalledWith(null);
-    expect(removeItemSpy).toHaveBeenCalledWith(storageKey);
+    expect(removeItemSpy).toHaveBeenCalledWith(tokenKey);
+    expect(service.currentUser$.value).toBeNull();
+    expect(service.isAuthenticated$.value).toBeFalse();
   });
 
-  it('should load initial role from localStorage', () => {
-    store[storageKey] = UserRole.Reporter;
-    createService();
+  it('init() should fetch the user when a token exists', () => {
+    store[tokenKey] = 'token-123';
 
-    expect(getItemSpy).toHaveBeenCalledWith(storageKey);
-    expect(service.getSnapshotUserRole()).toBe(UserRole.Reporter);
+    service.init().subscribe((user) => {
+      expect(user).toEqual(mockUser);
+    });
+
+    const userReq = httpMock.expectOne('/api/user');
+    userReq.flush(mockUser);
+
+    expect(service.currentUser$.value).toEqual(mockUser);
+    expect(service.isAuthenticated$.value).toBeTrue();
+  });
+
+  it('init() should clear the session when fetching the user fails', () => {
+    store[tokenKey] = 'token-123';
+
+    service.init().subscribe((user) => {
+      expect(user).toBeNull();
+    });
+
+    const userReq = httpMock.expectOne('/api/user');
+    userReq.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+    expect(removeItemSpy).toHaveBeenCalledWith(tokenKey);
+    expect(service.currentUser$.value).toBeNull();
+    expect(service.isAuthenticated$.value).toBeFalse();
   });
 });

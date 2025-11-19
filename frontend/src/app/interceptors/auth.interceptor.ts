@@ -17,16 +17,16 @@ export class AuthInterceptor implements HttpInterceptor {
     req: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    const currentRole = this.authService.getSnapshotUserRole();
+    const token = this.authService.getAuthToken();
 
-    if (!currentRole) {
+    if (!token) {
       return next.handle(req);
     }
 
-    const roleRequest = req.clone({
-      setHeaders: { 'X-USER-ROLE': currentRole },
+    const authorizedRequest = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
 
-    return next.handle(roleRequest);
+    return next.handle(authorizedRequest);
   }
 }

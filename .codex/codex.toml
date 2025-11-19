@@ -646,6 +646,74 @@ Provide the full, updated content for the `README.md` file.
 
 """
 
+[commands."frontend:implement-sanctum-auth"]
+prompt = """
+As an expert Angular developer, your task is to replace the application's "fake role login" with a real, robust, Sanctum-based authentication flow. This involves refactoring services, components, guards, and tests to communicate with the backend's `/api/login`, `/api/logout`, and `/api/user` endpoints.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/components/login/login.component.ts"}}
+{{file "frontend/src/app/components/login/login.component.html"}}
+{{file "frontend/src/app/components/login/login.component.scss"}}
+{{file "frontend/src/app/guards/auth.guard.ts"}}
+{{file "frontend/src/app/interceptors/auth.interceptor.ts"}}
+{{file "frontend/src/app/app.component.ts"}}
+{{file "frontend/src/app/app.component.html"}}
+{{file "frontend/src/app/app.component.scss"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+{{file "frontend/src/app/services/auth.service.spec.ts"}}
+{{file "frontend/src/app/interceptors/auth.interceptor.spec.ts"}}
+{{file "frontend/src/app/components/login/login.component.spec.ts"}}
+{{file "README.md"}}
+
+**Instructions:**
+
+**1. Update Auth Service & Models:**
+   - Create a new model `frontend/src/app/models/auth-user.model.ts` for the authenticated user (`id`, `name`, `email`, `role`).
+   - Rewrite `frontend/src/app/services/auth.service.ts`:
+     - It should expose `currentUser$ = new BehaviorSubject<AuthUser | null>(null)` and `isAuthenticated$ = new BehaviorSubject<boolean>(false)`.
+     - Implement `login(credentials: {email, password})`: calls `/api/login`, stores the token in `localStorage`, fetches the user via `/api/user`, and updates the observables.
+     - Implement `logout()`: calls `/api/logout`, clears `localStorage`, and resets observables.
+     - Implement `init()`: a method to be called on app startup that checks for a token in `localStorage` and, if found, fetches the user to restore the session.
+     - Expose public getters like `isAuthenticated()`, `getSnapshotUser()`, and `getAuthToken()`.
+
+**2. Update HTTP Interceptor & Guards:**
+   - Modify `frontend/src/app/interceptors/auth.interceptor.ts` to stop sending `X-USER-ROLE` and instead attach the `Authorization: Bearer <token>` header if a token exists in `AuthService`.
+   - Modify `frontend/src/app/guards/auth.guard.ts` to use `authService.isAuthenticated()` for its logic, redirecting to `/login` if it returns false.
+
+**3. Refactor Login Component:**
+   - In `frontend/src/app/components/login/`, replace the role-selection buttons with a reactive form (`FormGroup`) for `email` and `password`.
+   - Use Angular Material components (`mat-form-field`, `mat-input`, `mat-error`) for the form fields.
+   - Implement validation (`Validators.required`, `Validators.email`).
+   - On submit, call `authService.login()`. On success, navigate to `/tickets`. On failure, display an error message within the component.
+   - Add a note in the HTML with default credentials for the seeded `admin`, `agent`, and `reporter` users.
+
+**4. Update App Shell & Logout:**
+   - In `frontend/src/app/app.component.ts`, inject `AuthService` and expose `isAuthenticated$` and `currentUser$` to the template.
+   - In `frontend/src/app/app.component.html`, update the header/toolbar:
+     - If authenticated, display the user's name/role and a "Logout" button that calls `authService.logout()`.
+     - If not authenticated, show a "Login" button that links to `/login`.
+   - In `AppComponent`'s `ngOnInit`, call `authService.init()` to restore the session on app load.
+
+**5. Refactor Ticket Screens:**
+   - In `frontend/src/app/components/ticket-list/ticket-list.component.ts` and `ticket-details.component.ts`, remove reliance on the old `AuthService` snapshot methods.
+   - Instead, subscribe to `authService.currentUser$` and ensure that data-fetching logic (like `getTickets` or `getTicket`) only runs after the user is confirmed to be authenticated and loaded. Use RxJS operators like `filter` or `switchMap` where appropriate.
+
+**6. Update Unit Tests:**
+   - Rewrite `auth.service.spec.ts` to test the new login/logout/init methods, using `HttpClientTestingModule` to mock API responses.
+   - Rewrite `auth.interceptor.spec.ts` to verify that the `Authorization` header is correctly added.
+   - Rewrite `login.component.spec.ts` to test the new reactive form and its interaction with the mocked `AuthService`.
+   - Update any other tests that now fail due to the authentication changes.
+
+**7. Update Documentation:**
+   - Modify `README.md` to remove all references to the fake role selector and `X-USER-ROLE` header.
+   - Add a new section explaining the real login flow, mentioning the seeded user accounts and that the app uses a Sanctum token stored in `localStorage`.
+
+Provide the full, updated code for all modified and new files.
+
+"""
+
 [commands."frontend:integrate-ui"]
 prompt = """
 As an Angular developer, your task is to integrate and refine the UI for the ticket list and ticket details pages. This involves adding filtering, loading/empty states, and improving the responsive layout and user feedback.
