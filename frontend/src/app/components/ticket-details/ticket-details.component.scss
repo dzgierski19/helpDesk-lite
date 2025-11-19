@@ -1,3 +1,5 @@
+@import '../../../styles/theme';
+
 .ticket-card {
   margin: 1.5rem auto;
   max-width: 800px;
@@ -56,4 +58,35 @@
   max-width: 800px;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: map-get($breakpoints, mobile)) {
+  .ticket-card {
+    margin: 1rem;
+  }
+
+  .ticket-title,
+  .ticket-subtitle {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .suggestion-details {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .triage-actions {
+    flex-direction: column;
+    width: 100%;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .actions {
+    padding: 0 1rem;
+    justify-content: center;
+  }
 }

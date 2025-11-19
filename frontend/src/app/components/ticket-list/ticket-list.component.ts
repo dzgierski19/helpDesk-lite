@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 export class TicketListComponent implements OnInit {
   tickets$!: Observable<Ticket[]>;
   displayedColumns: string[] = [];
+  userRole: UserRole = UserRole.Reporter;
 
   constructor(
     private readonly ticketService: TicketService,
@@ -23,6 +24,7 @@ export class TicketListComponent implements OnInit {
 
   ngOnInit(): void {
     const role = this.authService.getSnapshotUserRole();
+    this.userRole = role;
 
     if (role === UserRole.Admin || role === UserRole.Agent) {
       this.displayedColumns = ['id', 'title', 'status', 'priority', 'assignee_id', 'created_at', 'actions'];

@@ -12,6 +12,7 @@ describe('TicketDetailsComponent', () => {
   let fixture: ComponentFixture<TicketDetailsComponent>;
   let ticketService: jasmine.SpyObj<TicketService>;
   let roleSubject: BehaviorSubject<UserRole | null>;
+  let authServiceMock: AuthService;
 
   beforeEach(async () => {
     ticketService = jasmine.createSpyObj('TicketService', [
@@ -24,6 +25,13 @@ describe('TicketDetailsComponent', () => {
     ticketService.getExternalUserInfo.and.returnValue(of({ name: 'External' }));
 
     roleSubject = new BehaviorSubject<UserRole | null>(UserRole.Agent);
+    authServiceMock = {
+      currentUserRole$: roleSubject,
+      login: () => {},
+      logout: () => {},
+      getCurrentUserRole: () => roleSubject.asObservable(),
+      getSnapshotUserRole: () => roleSubject.value,
+    } as AuthService;
 
     await TestBed.configureTestingModule({
       declarations: [TicketDetailsComponent],
@@ -33,10 +41,7 @@ describe('TicketDetailsComponent', () => {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: '1' }) } },
         },
-        {
-          provide: AuthService,
-          useValue: { currentUserRole$: roleSubject } as AuthService,
-        },
+        { provide: AuthService, useValue: authServiceMock },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
       ],
     }).compileComponents();

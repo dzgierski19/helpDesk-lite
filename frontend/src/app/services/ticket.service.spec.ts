@@ -28,7 +28,7 @@ describe('TicketService', () => {
     httpMock.verify();
   });
 
-  it('getTickets() should build correct params and headers', () => {
+  it('getTickets() should build correct params', () => {
     authService.getSnapshotUserRole.and.returnValue(UserRole.Admin);
 
     service.getTickets({ status: TicketStatus.New, tag: 'api' }).subscribe();
@@ -36,7 +36,6 @@ describe('TicketService', () => {
     const req = httpMock.expectOne((request) => request.url === '/api/tickets');
 
     expect(req.request.urlWithParams).toBe('/api/tickets?status=new&tag=api');
-    expect(req.request.headers.get('X-USER-ROLE')).toBe(UserRole.Admin);
 
     req.flush([]);
   });

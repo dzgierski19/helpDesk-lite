@@ -626,6 +626,49 @@ Provide the full code for all three new files: `login.component.ts`, `login.comp
 
 """
 
+[commands."frontend:make-responsive"]
+prompt = """
+As an Angular developer, your task is to make the application's key components responsive, ensuring they provide a good user experience on both mobile and desktop screens.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.scss"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.html"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.scss"}}
+{{file "frontend/src/styles/_theme.scss"}} # For breakpoint variables
+
+**Instructions:**
+
+**1. Define Breakpoints in Theme:**
+   - In `frontend/src/styles/_theme.scss`, add a map for breakpoints, e.g., `$breakpoints: (mobile: 768px);`.
+
+**2. Refactor `TicketListComponent` for Responsiveness:**
+   - **`ticket-list.component.html`:**
+     - Keep the `mat-table` for desktop views. Wrap it in a `div` with a class like `.desktop-view`.
+     - Add a new `div` with a class like `.mobile-view`.
+     - Inside `.mobile-view`, use an `*ngFor` to iterate over the `(tickets$ | async)` and render an `<app-ticket-card>` for each ticket.
+     - Pass the `ticket` object and the current `userRole` to each `app-ticket-card`.
+   - **`ticket-list.component.scss`:**
+     - Use a media query (e.g., `@media (max-width: map-get($breakpoints, mobile))`) to control visibility.
+     - Hide `.desktop-view` and show `.mobile-view` on small screens.
+     - Hide `.mobile-view` and show `.desktop-view` on large screens.
+
+**3. Make `TicketDetailsComponent` Responsive:**
+   - **`ticket-details.component.html`:**
+     - The current layout is likely a single `mat-card`. Ensure its content can wrap and stack naturally. If it uses flexbox, change `flex-direction` to `column` on mobile.
+   - **`ticket-details.component.scss`:**
+     - Add a media query to adjust the layout for mobile. For example, make flex containers stack vertically (`flex-direction: column`) and ensure padding is appropriate for smaller screens.
+
+**4. Adjust `TicketCardComponent`:**
+   - **`ticket-card.component.scss`:**
+     - Ensure the card takes up the full width on mobile screens (`width: 100%`) and has a reasonable `max-width` on desktop.
+
+Provide the full code for all modified files.
+
+"""
+
 [commands."frontend:make-routing-and-guards"]
 prompt = """
 As an Angular developer, your task is to establish the application's routing structure. This includes creating an `AppRoutingModule`, implementing route guards for authentication and role-based access control, and updating the main `AppModule`.

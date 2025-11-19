@@ -1,9 +1,8 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Ticket } from '../models/ticket.model';
 import { TicketPriority, TicketStatus } from '../models/enums';
-import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,10 +10,7 @@ import { AuthService } from './auth.service';
 export class TicketService {
   private readonly apiUrl = '/api';
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly authService: AuthService
-  ) {}
+  constructor(private readonly http: HttpClient) {}
 
   getTickets(filters?: {
     status?: TicketStatus;
@@ -39,34 +35,23 @@ export class TicketService {
       }
     }
 
-    return this.http.get<Ticket[]>(`${this.apiUrl}/tickets`, {
-      params,
-      headers: this.buildHeaders(),
-    });
+    return this.http.get<Ticket[]>(`${this.apiUrl}/tickets`, { params });
   }
 
   getTicket(id: number): Observable<Ticket> {
-    return this.http.get<Ticket>(`${this.apiUrl}/tickets/${id}`, {
-      headers: this.buildHeaders(),
-    });
+    return this.http.get<Ticket>(`${this.apiUrl}/tickets/${id}`);
   }
 
   createTicket(ticket: Partial<Ticket>): Observable<Ticket> {
-    return this.http.post<Ticket>(`${this.apiUrl}/tickets`, ticket, {
-      headers: this.buildHeaders(),
-    });
+    return this.http.post<Ticket>(`${this.apiUrl}/tickets`, ticket);
   }
 
   updateTicket(id: number, ticket: Partial<Ticket>): Observable<Ticket> {
-    return this.http.put<Ticket>(`${this.apiUrl}/tickets/${id}`, ticket, {
-      headers: this.buildHeaders(),
-    });
+    return this.http.put<Ticket>(`${this.apiUrl}/tickets/${id}`, ticket);
   }
 
   deleteTicket(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/tickets/${id}`, {
-      headers: this.buildHeaders(),
-    });
+    return this.http.delete<void>(`${this.apiUrl}/tickets/${id}`);
   }
 
   getTriageSuggestion(id: number): Observable<{
@@ -78,25 +63,10 @@ export class TicketService {
       suggested_status: TicketStatus;
       suggested_priority: TicketPriority;
       suggested_tags: string[];
-    }>(`${this.apiUrl}/tickets/${id}/triage-suggest`, {}, {
-      headers: this.buildHeaders(),
-    });
+    }>(`${this.apiUrl}/tickets/${id}/triage-suggest`, {});
   }
 
   getExternalUserInfo(): Observable<{ name: string }> {
-    return this.http.get<{ name: string }>(`${this.apiUrl}/external/user-info`, {
-      headers: this.buildHeaders(),
-    });
-  }
-
-  private buildHeaders(): HttpHeaders {
-    const role = this.authService.getSnapshotUserRole();
-    let headers = new HttpHeaders();
-
-    if (role) {
-      headers = headers.set('X-USER-ROLE', role);
-    }
-
-    return headers;
+    return this.http.get<{ name: string }>(`${this.apiUrl}/external/user-info`);
   }
 }
