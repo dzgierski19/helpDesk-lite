@@ -235,7 +235,7 @@ commands:
           - Write a test method `test_ticket_belongs_to_assignee()`:
             - Create a `User` and a `Ticket` with this user as `assignee`.
             - Assert that `ticket->assignee` returns an instance of `User`.
-          - Write a test method `test_ticket_has_many_status_changes()`:
+          - Write a test method `test_ticket_has-many-status-changes()`:
             - Create a `Ticket`.
             - Create several `TicketStatusChange` instances, associating them with this ticket.
             - Assert that `ticket->statusChanges` returns a collection of `TicketStatusChange` instances and contains the correct number of changes.
@@ -980,3 +980,66 @@ commands:
 
       Provide the full TypeScript code for all four new `.spec.ts` files.
 
+  frontend:make-additional-tests:
+    prompt: |
+      As an Angular developer, your task is to create specific unit tests for key parts of the application, focusing on HTTP interactions and component logic.
+
+      **Context Files:**
+      {{file "frontend/src/app/services/ticket.service.ts"}}
+      {{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+      {{file "frontend/src/app/interceptors/auth.interceptor.ts"}}
+      {{file "frontend/src/app/components/loader/loader.component.ts"}}
+      {{file "frontend/src/app/services/ui.service.ts"}}
+      {{file "frontend/src/app/models/enums.ts"}}
+
+      **Instructions:**
+
+      Create or update the following `.spec.ts` files with the specified tests. Use `TestBed` for configuration and provide mocks for all dependencies.
+
+      **1. `frontend/src/app/services/ticket.service.spec.ts`:**
+         - **Setup:** Configure `TestBed` with `HttpClientTestingModule`. Get `HttpTestingController` and mock `AuthService`.
+         - **`getTickets() should build correct params and headers`**:
+           - Mock `authService.getSnapshotUserRole()` to return `UserRole.Admin`.
+           - Call `getTickets()` with filters (e.g., `{ status: TicketStatus.New, tag: 'api' }`).
+           - Use `httpMock.expectOne()` to catch the request.
+           - Assert that the request URL includes the correct query params (`?status=new&tag=api`).
+           - Assert that the request headers include `X-USER-ROLE: admin`.
+           - Flush the mock request.
+
+      **2. `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`:**
+         - **Setup:** Configure `TestBed`. Mocks for `ActivatedRoute`, `TicketService`, `AuthService`, `Router`.
+         - **`loadTriageSuggestion() should fetch suggestion and set property`**:
+           - Mock `ticketService.getTriageSuggestion()` to return a mock suggestion.
+           - Call `component.loadTriageSuggestion(1)`.
+           - Assert that `component.triageSuggestion` is set to the mock suggestion.
+         - **`acceptTriageSuggestion() should call updateTicket with correct data`**:
+           - Set `component.triageSuggestion` to a mock suggestion.
+           - Mock `ticketService.updateTicket()` to return an observable.
+           - Call `component.acceptTriageSuggestion(1)`.
+           - Assert that `ticketService.updateTicket` was called with the correct ID and the data from `triageSuggestion`.
+
+      **3. `frontend/src/app/interceptors/auth.interceptor.spec.ts`:**
+         - **Setup:** `TestBed` with `HttpClientTestingModule`. Mocks for `AuthService`.
+         - **`should add X-USER-ROLE header when role exists`**:
+           - Mock `authService.getSnapshotUserRole()` to return `UserRole.Agent`.
+           - Make a test HTTP call.
+           - Use `httpMock.expectOne()` to catch the request.
+           - Assert that `req.headers.has('X-USER-ROLE')` is true and the value is `agent`.
+         - **`should NOT add X-USER-ROLE header when role is null`**:
+           - Mock `authService.getSnapshotUserRole()` to return `null`.
+           - Make a test HTTP call.
+           - Use `httpMock.expectOne()` to catch the request.
+           - Assert that `req.headers.has('X-USER-ROLE')` is false.
+
+      **4. `frontend/src/app/components/loader/loader.component.spec.ts`:**
+         - **Setup:** `TestBed`. Mock for `UiService` using a `BehaviorSubject` for `loading$`.
+         - **`should show spinner when isLoading$ is true`**:
+           - Set `uiService.loading$.next(true)`.
+           - `fixture.detectChanges()`.
+           - Assert that the spinner element exists in the component's native element.
+         - **`should not show spinner when isLoading$ is false`**:
+           - Set `uiService.loading$.next(false)`.
+           - `fixture.detectChanges()`.
+           - Assert that the spinner element does not exist.
+
+      Provide the full TypeScript code for all four new or updated `.spec.ts` files.
