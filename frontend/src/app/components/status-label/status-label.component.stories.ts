@@ -23,6 +23,17 @@ const meta: Meta<StatusLabelComponent> = {
       ],
     },
   },
+  parameters: {
+    layout: 'centered',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <div class="sb-aurora-panel">
+        <app-status-label [status]="status"></app-status-label>
+      </div>
+    `,
+  }),
 };
 
 export default meta;

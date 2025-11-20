@@ -22,6 +22,7 @@ import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
+import { AuthUser } from '../../models/auth-user.model';
 
 const baseDeclarations = [TicketListComponent, TicketCardComponent, PriorityBadgeComponent, StatusLabelComponent];
 const baseImports = [
@@ -73,11 +74,22 @@ const createTicketService = (tickets: Ticket[], mode: TicketListStoryConfig['str
   } as Pick<TicketService, 'getTickets'>;
 };
 
-const createAuthService = (role: UserRole) =>
-  ({
-    getSnapshotUserRole: () => role,
-    currentUserRole$: of(role),
-  }) as Pick<AuthService, 'getSnapshotUserRole' | 'currentUserRole$'>;
+const createAuthService = (role: UserRole) => {
+  const user: AuthUser = {
+    id: 1,
+    name: 'Story User',
+    email: 'story@example.com',
+    role,
+  };
+  const currentUser$ = new BehaviorSubject<AuthUser | null>(user);
+
+  return {
+    currentUser$: currentUser$.asObservable(),
+    isAuthenticated$: new BehaviorSubject<boolean>(true),
+    isAuthenticated: () => true,
+    getSnapshotUser: () => user,
+  } as Pick<AuthService, 'currentUser$' | 'isAuthenticated$' | 'isAuthenticated' | 'getSnapshotUser'>;
+};
 
 const createUiService = (initialLoading: boolean, persist: boolean) => {
   const loading$ = new BehaviorSubject<boolean>(initialLoading);

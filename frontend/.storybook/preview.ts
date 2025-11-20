@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/angular';
+import './storybook-theme.styles';
 
 const customViewports = {
   mobile: {
@@ -29,6 +30,7 @@ const customViewports = {
 
 const preview: Preview = {
   parameters: {
+    layout: 'centered',
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -42,11 +44,11 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'Surface',
+      default: 'Aurora Canvas',
       values: [
-        { name: 'Surface', value: '#f5f5f5' },
+        { name: 'Aurora Canvas', value: '#050b16' },
+        { name: 'Glass Surface', value: 'rgba(15, 23, 42, 0.85)' },
         { name: 'Pure White', value: '#ffffff' },
-        { name: 'Dark Overlay', value: '#1f1f1f' },
       ],
     },
     docs: {

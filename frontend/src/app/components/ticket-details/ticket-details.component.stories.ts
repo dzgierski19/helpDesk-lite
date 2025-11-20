@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { BehaviorSubject, NEVER, Observable, of, throwError } from 'rxjs';
 
 import { TicketDetailsComponent } from './ticket-details.component';
@@ -18,6 +19,7 @@ import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
+import { AuthUser } from '../../models/auth-user.model';
 
 interface TicketDetailsStoryConfig {
   ticket$: Observable<Ticket>;
@@ -36,6 +38,7 @@ const baseImports = [
   MatButtonModule,
   MatChipsModule,
   MatProgressBarModule,
+  MatIconModule,
 ];
 
 const createModuleMetadata = (config: TicketDetailsStoryConfig) => ({
@@ -76,11 +79,21 @@ const createTicketService = (ticket$: Observable<Ticket>, externalUser?: { name:
 };
 
 const createAuthService = (role: UserRole) => {
-  const subject = new BehaviorSubject<UserRole | null>(role);
+  const user: AuthUser = {
+    id: 1,
+    name: 'Story User',
+    email: 'story@example.com',
+    role,
+  };
+  const subject = new BehaviorSubject<AuthUser | null>(user);
+  const authState$ = new BehaviorSubject<boolean>(true);
+
   return {
-    currentUserRole$: subject.asObservable(),
-    getSnapshotUserRole: () => role,
-  } as Pick<AuthService, 'currentUserRole$' | 'getSnapshotUserRole'>;
+    currentUser$: subject.asObservable(),
+    isAuthenticated$: authState$.asObservable(),
+    isAuthenticated: () => true,
+    getSnapshotUser: () => user,
+  } as Pick<AuthService, 'currentUser$' | 'isAuthenticated$' | 'isAuthenticated' | 'getSnapshotUser'>;
 };
 
 const createUiService = (keepLoader: boolean) => {
@@ -130,6 +143,13 @@ const meta: Meta<TicketDetailsComponent> = {
   parameters: {
     layout: 'fullscreen',
   },
+  render: () => ({
+    template: `
+      <div class="sb-aurora-panel" style="width: min(1100px, 100%);">
+        <app-ticket-details></app-ticket-details>
+      </div>
+    `,
+  }),
 };
 
 export default meta;

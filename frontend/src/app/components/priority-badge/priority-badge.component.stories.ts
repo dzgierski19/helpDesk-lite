@@ -23,6 +23,17 @@ const meta: Meta<PriorityBadgeComponent> = {
       ],
     },
   },
+  parameters: {
+    layout: 'centered',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <div class="sb-aurora-panel">
+        <app-priority-badge [priority]="priority"></app-priority-badge>
+      </div>
+    `,
+  }),
 };
 
 export default meta;

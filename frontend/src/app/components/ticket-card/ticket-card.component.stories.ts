@@ -2,6 +2,7 @@ import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { TicketCardComponent } from './ticket-card.component';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
@@ -15,9 +16,24 @@ const meta: Meta<TicketCardComponent> = {
   decorators: [
     moduleMetadata({
       declarations: [TicketCardComponent, PriorityBadgeComponent, StatusLabelComponent],
-      imports: [CommonModule, MatCardModule, MatButtonModule],
+      imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
     }),
   ],
+  parameters: {
+    layout: 'centered',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <div class="sb-aurora-panel">
+        <app-ticket-card
+          [ticket]="ticket"
+          [userRole]="userRole"
+          (viewDetails)="viewDetails($event)"
+        ></app-ticket-card>
+      </div>
+    `,
+  }),
   argTypes: {
     ticket: {
       control: 'object',
