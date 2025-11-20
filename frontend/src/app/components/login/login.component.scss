@@ -4,13 +4,45 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: #f5f5f5;
+  background: radial-gradient(circle at top, rgba(79, 70, 229, 0.15), transparent 55%),
+    radial-gradient(circle at bottom, rgba(14, 165, 233, 0.12), transparent 60%),
+    #eef2ff;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
   text-align: left;
+  padding: 2rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 30px 80px rgb(15 23 42 / 12%);
+  border: 1px solid rgb(15 23 42 / 6%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.login-card__hero {
+  margin-bottom: 1.5rem;
+
+  .login-card__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(120deg, rgba(99, 102, 241, 0.15), rgba(94, 234, 212, 0.2));
+    color: #4f46e5;
+    margin-bottom: 0.75rem;
+  }
+
+  mat-card-title {
+    font-size: 1.8rem;
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+  }
 }
 
 .login-subtitle {
@@ -33,10 +65,11 @@ form {
 
 .credential-hint {
   margin-top: 1.5rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  background: linear-gradient(120deg, rgba(129, 140, 248, 0.15), rgba(59, 130, 246, 0.1));
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
   font-size: 0.9rem;
+  border: 1px solid rgba(99, 102, 241, 0.15);
 
   ul {
     margin: 0.5rem 0 0;

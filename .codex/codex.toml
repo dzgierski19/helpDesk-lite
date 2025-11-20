@@ -646,6 +646,39 @@ Provide the full, updated content for the `README.md` file.
 
 """
 
+[commands."frontend:fix-filter-row-alignment"]
+prompt = """
+As an Angular developer specializing in responsive UI/UX, your task is to fix the alignment of the filter row in the `TicketListComponent`. On wide screens (≥1200px), the Status, Priority, Tag fields, and the Filter button should remain perfectly aligned on a single line without wrapping. On smaller breakpoints, the elements should wrap or stack gracefully.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+
+**Instructions:**
+
+1.  **Modify `frontend/src/app/components/ticket-list/ticket-list.component.html`:**
+    - Wrap the filter controls (Status, Priority, Tag) and the Filter button within a container element (e.g., a `div`) that can be styled for flexbox layout.
+    - Ensure each filter field (`mat-form-field`) and the button (`button`) are direct children of this container.
+
+2.  **Modify `frontend/src/app/components/ticket-list/ticket-list.component.scss`:**
+    - Apply CSS to the new container element to achieve the desired layout:
+      - Use `display: flex`, `align-items: center`, and `flex-wrap: wrap` for the container.
+      - For wide screens (e.g., using a media query `@media (min-width: 1200px)`):
+        - Set `flex-wrap: nowrap` to keep elements on a single line.
+        - Use `gap` or `margin-right` between elements for spacing.
+        - Ensure filter fields can shrink (`flex-shrink: 1`) but maintain a minimum width (`min-width`) to prevent them from becoming too small.
+      - For smaller screens, `flex-wrap: wrap` should allow elements to stack or wrap as needed.
+    - Ensure no horizontal scrollbars are introduced on wide screens.
+
+**Acceptance Criteria:**
+- Filter button sits flush with the Status/Priority/Tag fields when viewport ≥1200px.
+- No horizontal scrollbars introduced; fields shrink elegantly but never wrap on desktop.
+- Tablet/mobile behavior remains stacked.
+
+Provide the full, updated code for `frontend/src/app/components/ticket-list/ticket-list.component.html` and `frontend/src/app/components/ticket-list/ticket-list.component.scss`.
+
+"""
+
 [commands."frontend:implement-sanctum-auth"]
 prompt = """
 As an expert Angular developer, your task is to replace the application's "fake role login" with a real, robust, Sanctum-based authentication flow. This involves refactoring services, components, guards, and tests to communicate with the backend's `/api/login`, `/api/logout`, and `/api/user` endpoints.

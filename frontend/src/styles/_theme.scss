@@ -1,10 +1,13 @@
-$primary-color: #3f51b5;
-$accent-color: #ff4081;
+$primary-color: #6366f1;
+$accent-color: #ec4899;
 $warn-color: #f44336;
-$success-color: #4caf50;
-$info-color: #2196f3;
-$text-color: #212121;
-$background-color: #f5f5f5;
+$success-color: #22c55e;
+$info-color: #0ea5e9;
+$text-color: #0f172a;
+$background-color: #f8fafc;
+$brand-blue: #38bdf8;
+$brand-purple: #a855f7;
+$brand-cyan: #5eead4;
 
 :root {
   --color-primary: #{$primary-color};
@@ -14,6 +17,16 @@ $background-color: #f5f5f5;
   --color-info: #{$info-color};
   --color-text: #{$text-color};
   --color-background: #{$background-color};
+  --brand-blue: #{$brand-blue};
+  --brand-purple: #{$brand-purple};
+  --brand-cyan: #{$brand-cyan};
+  --gradient-brand: linear-gradient(120deg, #{$brand-blue}, #{$brand-purple});
+  --gradient-aurora: radial-gradient(circle at top, rgba(56, 189, 248, 0.2), transparent 60%),
+    radial-gradient(circle at bottom, rgba(168, 85, 247, 0.18), transparent 65%),
+    #0f172a;
+  --surface-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
+  --radius-card: 1.25rem;
+  --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.16);
 }
 
 $breakpoints: (

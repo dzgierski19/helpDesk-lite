@@ -1,30 +1,35 @@
 <form class="filter-form" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-  <mat-form-field appearance="fill">
-    <mat-label>Status</mat-label>
-    <mat-select formControlName="status">
-      <mat-option [value]="null">All statuses</mat-option>
-      <mat-option *ngFor="let status of statusOptions" [value]="status">
-        {{ status | titlecase }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+  <div class="filter-controls">
+    <mat-form-field appearance="fill">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option [value]="null">All statuses</mat-option>
+        <mat-option *ngFor="let status of statusOptions" [value]="status">
+          {{ status | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Priority</mat-label>
-    <mat-select formControlName="priority">
-      <mat-option [value]="null">All priorities</mat-option>
-      <mat-option *ngFor="let priority of priorityOptions" [value]="priority">
-        {{ priority | titlecase }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option [value]="null">All priorities</mat-option>
+        <mat-option *ngFor="let priority of priorityOptions" [value]="priority">
+          {{ priority | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="fill" class="tag-field">
-    <mat-label>Tag</mat-label>
-    <input matInput placeholder="Search by tag" formControlName="tag" />
-  </mat-form-field>
+    <mat-form-field appearance="fill" class="tag-field">
+      <mat-label>Tag</mat-label>
+      <input matInput placeholder="Search by tag" formControlName="tag" />
+    </mat-form-field>
 
-  <button mat-flat-button color="primary" type="submit">Filter</button>
+    <button mat-flat-button color="primary" type="submit">
+      <mat-icon>tune</mat-icon>
+      Filter
+    </button>
+  </div>
 </form>
 
 <mat-progress-bar

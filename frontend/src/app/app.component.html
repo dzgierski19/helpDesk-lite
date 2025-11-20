@@ -1,11 +1,52 @@
 <div class="app-shell">
   <header class="app-header">
+    <div class="header-ambient">
+      <span class="ambient-orb ambient-orb--one"></span>
+      <span class="ambient-orb ambient-orb--two"></span>
+      <span class="ambient-orb ambient-orb--three"></span>
+    </div>
+    <div class="header-pills">
+      <span class="pill pill--online">
+        <span class="dot"></span>
+        Backend live
+      </span>
+      <span class="pill pill--storybook">
+        <mat-icon fontIcon="auto_graph"></mat-icon>
+        Storybook synced
+      </span>
+      <span class="pill pill--llm">LLM-assisted delivery</span>
+    </div>
     <div class="brand">
-      <span class="brand-badge">HL</span>
+      <div class="brand-logo">
+        <span>HL</span>
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.9" />
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="58" stroke="url(#glow)" stroke-width="4" fill="none" />
+        </svg>
+      </div>
       <div class="brand-copy">
         <p class="eyebrow">Helpdesk Lite</p>
         <h1>Customer ticketing workspace</h1>
         <p class="subtitle">Manage authentication issues, requests, and AI-powered triage suggestions in one place.</p>
+        <ul class="brand-kpis">
+          <li>
+            <span class="label">Live tickets</span>
+            <strong>18</strong>
+          </li>
+          <li>
+            <span class="label">Awaiting triage</span>
+            <strong>5</strong>
+          </li>
+          <li>
+            <span class="label">Avg response</span>
+            <strong>12m</strong>
+          </li>
+        </ul>
       </div>
     </div>
 
