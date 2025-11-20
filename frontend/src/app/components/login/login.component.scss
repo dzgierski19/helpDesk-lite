@@ -1,12 +1,18 @@
 .login-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 5rem);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 2rem;
+  padding: 3.5rem 2rem 3rem;
   background: radial-gradient(circle at top, rgba(79, 70, 229, 0.15), transparent 55%),
     radial-gradient(circle at bottom, rgba(14, 165, 233, 0.12), transparent 60%),
     #eef2ff;
+
+  @media (max-width: 768px) {
+    min-height: auto;
+    padding: 1.25rem;
+    justify-content: center;
+  }
 }
 
 .login-card {
@@ -18,10 +24,15 @@
   box-shadow: 0 30px 80px rgb(15 23 42 / 12%);
   border: 1px solid rgb(15 23 42 / 6%);
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+
+  .login-card__content {
+    padding: 0;
+  }
 }
 
 .login-card__hero {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
 
   .login-card__badge {
     display: inline-flex;
@@ -47,7 +58,7 @@
 
 .login-subtitle {
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #5f6368;
 }
 
@@ -56,6 +67,7 @@ form {
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.25rem;
+  padding-left: 0.5rem;
 }
 
 .error-message {

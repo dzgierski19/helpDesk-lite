@@ -145,8 +145,37 @@ const meta: Meta<TicketDetailsComponent> = {
   },
   render: () => ({
     template: `
-      <div class="sb-aurora-panel" style="width: min(1100px, 100%);">
-        <app-ticket-details></app-ticket-details>
+      <div class="sb-aurora-shell">
+        <header class="sb-aurora-shell__header">
+          <div class="sb-aurora-shell__brand">
+            <p class="sb-aurora-shell__eyebrow">Helpdesk Lite</p>
+            <h1>Customer ticketing workspace</h1>
+            <p class="sb-aurora-shell__subtitle">
+              Manage authentication issues, requests, and AI-powered triage suggestions in one place.
+            </p>
+          </div>
+          <div class="sb-aurora-shell__user">
+            <span class="sb-aurora-shell__user-name">Story User</span>
+            <span class="sb-aurora-shell__role">Agent</span>
+          </div>
+        </header>
+        <div class="sb-aurora-shell__content">
+          <section class="sb-aurora-shell__summary">
+            <div>
+              <p class="summary-label">Live tickets</p>
+              <strong>10</strong>
+            </div>
+            <div>
+              <p class="summary-label">Awaiting triage</p>
+              <strong>4</strong>
+            </div>
+            <div>
+              <p class="summary-label">Avg response</p>
+              <strong>12h</strong>
+            </div>
+          </section>
+          <app-ticket-details></app-ticket-details>
+        </div>
       </div>
     `,
   }),

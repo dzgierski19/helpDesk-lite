@@ -16,6 +16,50 @@
           <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
           <app-status-label [status]="ticket.status"></app-status-label>
         </div>
+
+        <ng-container *ngIf="canUpdateTicket()">
+          <div class="hero-actions">
+            <p class="hero-actions-label">Update progress</p>
+            <div class="hero-actions-buttons">
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                class="status-action-button progress-action-button"
+                *ngFor="let action of progressActions"
+                [disabled]="ticket.status === action.status || statusUpdateInFlight === action.status"
+                (click)="updateTicketStatus(ticket.id, action.status)"
+              >
+                <mat-icon *ngIf="statusUpdateInFlight !== action.status">{{ action.icon }}</mat-icon>
+                <mat-icon class="spinning-icon" *ngIf="statusUpdateInFlight === action.status">autorenew</mat-icon>
+                {{ action.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-actions hero-assign">
+            <p class="hero-actions-label">Assignment</p>
+            <div class="hero-actions-buttons">
+              <button
+                mat-stroked-button
+                color="accent"
+                type="button"
+                class="status-action-button assign-action-button"
+                [disabled]="assignInFlight || !currentUser"
+                (click)="toggleAssignee(ticket.id, ticket.assignee_id)"
+              >
+                <mat-icon *ngIf="!assignInFlight">
+                  {{ ticket.assignee_id === currentUser?.id ? 'person_remove' : 'person_add' }}
+                </mat-icon>
+                <mat-icon class="spinning-icon" *ngIf="assignInFlight">autorenew</mat-icon>
+                {{ ticket.assignee_id === currentUser?.id ? 'Unassign' : 'Assign to me' }}
+              </button>
+              <span class="hero-assign-note" *ngIf="currentUser">
+                Current assignee: {{ ticket.assignee_id || 'Unassigned' }}
+              </span>
+            </div>
+          </div>
+        </ng-container>
       </div>
 
       <div class="details-grid">

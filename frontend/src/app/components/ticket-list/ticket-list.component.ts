@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, EMPTY, Subject, of } from 'rxjs';
 import { finalize, catchError, takeUntil, distinctUntilChanged, filter, tap } from 'rxjs/operators';
 import { AuthUser } from '../../models/auth-user.model';
@@ -21,6 +21,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [];
   userRole: UserRole = UserRole.Reporter;
   filterForm: FormGroup;
+  createForm: FormGroup;
+  showCreateForm = false;
   readonly statusOptions = Object.values(TicketStatus);
   readonly priorityOptions = Object.values(TicketPriority);
   readonly isLoading$ = this.uiService.loading$;
@@ -33,15 +35,31 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private readonly uiService: UiService,
     private readonly router: Router,
     private readonly ticketStatsService: TicketStatsService,
+    private readonly route: ActivatedRoute,
   ) {
     this.filterForm = this.fb.group({
       status: [null],
       priority: [null],
       tag: [''],
     });
+
+    this.createForm = this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(255)]],
+      description: ['', [Validators.required]],
+      priority: [TicketPriority.Medium, Validators.required],
+      status: [TicketStatus.New, Validators.required],
+      assignee_id: [null],
+      tags: [''],
+    });
   }
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        this.showCreateForm = params.get('create') === '1';
+      });
+
     this.authService.currentUser$
       .pipe(
         filter((user): user is AuthUser => !!user),
@@ -52,6 +70,50 @@ export class TicketListComponent implements OnInit, OnDestroy {
         this.userRole = user.role;
         this.updateDisplayedColumns();
         this.applyFilters();
+      });
+  }
+
+  toggleCreateForm(): void {
+    this.setCreateFormVisibility(!this.showCreateForm);
+  }
+
+  submitCreateForm(): void {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+
+    const { title, description, priority, status, assignee_id, tags } = this.createForm.value;
+    const payload: Partial<Ticket> = {
+      title,
+      description,
+      priority,
+      status,
+      assignee_id,
+      tags: this.parseTags(tags),
+    };
+
+    this.uiService.showLoader();
+    this.ticketService
+      .createTicket(payload)
+      .pipe(finalize(() => this.uiService.hideLoader()))
+      .subscribe({
+        next: () => {
+          this.uiService.showSnackbar('Ticket created successfully.');
+          this.createForm.reset({
+            title: '',
+            description: '',
+            priority: TicketPriority.Medium,
+            status: TicketStatus.New,
+            assignee_id: null,
+            tags: '',
+          });
+          this.setCreateFormVisibility(false);
+          this.applyFilters();
+        },
+        error: () => {
+          this.uiService.showSnackbar('Unable to create ticket.');
+        },
       });
   }
 
@@ -118,5 +180,29 @@ export class TicketListComponent implements OnInit, OnDestroy {
     }
 
     this.displayedColumns = ['id', 'title', 'status', 'priority', 'created_at'];
+  }
+
+  private parseTags(tagsValue: string | string[]): string[] {
+    if (Array.isArray(tagsValue)) {
+      return tagsValue;
+    }
+
+    return (tagsValue ?? '')
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
+  }
+
+  private setCreateFormVisibility(shouldOpen: boolean): void {
+    this.showCreateForm = shouldOpen;
+    this.updateCreateFormQueryParam(shouldOpen);
+  }
+
+  private updateCreateFormQueryParam(shouldOpen: boolean): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { create: shouldOpen ? '1' : null },
+      queryParamsHandling: 'merge',
+    });
   }
 }

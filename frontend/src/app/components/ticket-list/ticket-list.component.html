@@ -1,3 +1,52 @@
+<section class="create-ticket" *ngIf="showCreateForm">
+  <form class="create-form" [formGroup]="createForm" (ngSubmit)="submitCreateForm()">
+    <mat-form-field appearance="fill">
+      <mat-label>Title</mat-label>
+      <input matInput type="text" formControlName="title" placeholder="Short summary" />
+      <mat-error *ngIf="createForm.get('title')?.hasError('required')">Title is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="description-field">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="3" formControlName="description" placeholder="Describe the issue"></textarea>
+      <mat-error *ngIf="createForm.get('description')?.hasError('required')">Description is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option *ngFor="let priority of priorityOptions" [value]="priority">
+          {{ priority | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option *ngFor="let status of statusOptions" [value]="status">
+          {{ status | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Assignee ID</mat-label>
+      <input matInput type="number" formControlName="assignee_id" placeholder="Optional" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Tags (comma separated)</mat-label>
+      <input matInput type="text" formControlName="tags" placeholder="api, mobile" />
+    </mat-form-field>
+
+    <div class="create-actions">
+      <button mat-stroked-button type="button" (click)="toggleCreateForm()">Cancel</button>
+      <button mat-raised-button color="primary" type="submit">Create Ticket</button>
+    </div>
+  </form>
+</section>
+
 <form class="filter-form" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
   <div class="filter-controls">
     <mat-form-field appearance="fill">

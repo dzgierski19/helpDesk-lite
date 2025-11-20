@@ -12,4 +12,12 @@ export class PriorityBadgeComponent {
   get priorityClass(): string {
     return this.priority ? `priority-${this.priority}` : 'priority-low';
   }
+
+  get priorityLabel(): string {
+    if (!this.priority) {
+      return '';
+    }
+
+    return this.priority.charAt(0).toUpperCase() + this.priority.slice(1);
+  }
 }

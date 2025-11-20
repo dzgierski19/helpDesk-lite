@@ -28,10 +28,25 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
   readonly UserRole = UserRole;
   readonly TicketPriority = TicketPriority;
   readonly TicketStatus = TicketStatus;
+  readonly progressActions: Array<{ status: TicketStatus; label: string; icon: string }> = [
+    {
+      status: TicketStatus.InProgress,
+      label: 'Mark in progress',
+      icon: 'play_circle',
+    },
+    {
+      status: TicketStatus.Resolved,
+      label: 'Resolve ticket',
+      icon: 'task_alt',
+    },
+  ];
 
   private ticketId: number | null = null;
   private currentUserRole: UserRole | null = null;
   private readonly destroy$ = new Subject<void>();
+  statusUpdateInFlight: TicketStatus | null = null;
+  assignInFlight = false;
+  currentUser: AuthUser | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -54,6 +69,7 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
       )
       .subscribe((user) => {
         this.currentUserRole = user.role;
+        this.currentUser = user;
         this.refreshTicket();
         this.externalUserInfo$ = this.ticketService.getExternalUserInfo();
       });
@@ -120,6 +136,61 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tickets']);
   }
 
+  canUpdateTicket(): boolean {
+    return this.currentUserRole === UserRole.Agent || this.currentUserRole === UserRole.Admin;
+  }
+
+  toggleAssignee(ticketId: number, currentAssignee: number | null): void {
+    if (!this.canUpdateTicket() || !this.currentUser || this.assignInFlight) {
+      return;
+    }
+
+    const newAssigneeId = currentAssignee === this.currentUser.id ? null : this.currentUser.id;
+    const actionLabel = newAssigneeId ? 'assigned' : 'unassigned';
+
+    this.assignInFlight = true;
+    this.ticketService
+      .updateTicket(ticketId, { assignee_id: newAssigneeId })
+      .pipe(
+        finalize(() => {
+          this.assignInFlight = false;
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.uiService.showSnackbar(`Ticket ${actionLabel}.`);
+          this.refreshTicket();
+        },
+        error: () => {
+          this.uiService.showSnackbar('Unable to update assignee.');
+        },
+      });
+  }
+
+  updateTicketStatus(ticketId: number, status: TicketStatus): void {
+    if (!this.canUpdateTicket() || this.statusUpdateInFlight === status) {
+      return;
+    }
+
+    this.statusUpdateInFlight = status;
+    this.ticketService
+      .updateTicket(ticketId, { status })
+      .pipe(
+        finalize(() => {
+          this.statusUpdateInFlight = null;
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.uiService.showSnackbar('Ticket status updated.');
+          this.refreshTicket();
+        },
+        error: () => {
+          this.uiService.showSnackbar('Unable to update ticket status.');
+        },
+      });
+  }
+
   private refreshTicket(): void {
     if (!this.authService.isAuthenticated()) {
       return;
@@ -153,4 +224,5 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
       this.currentUserRole === UserRole.Agent || this.currentUserRole === UserRole.Admin
     );
   }
+
 }

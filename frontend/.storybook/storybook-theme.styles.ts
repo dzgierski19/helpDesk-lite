@@ -1,5 +1,6 @@
 const auroraStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 :root {
   font-family: 'Space Grotesk', 'Inter', Roboto, sans-serif;
@@ -92,12 +93,78 @@ body.sb-show-main {
   text-transform: uppercase;
 }
 
+.sb-aurora-shell__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.8rem;
+}
+
+.sb-aurora-shell__subtitle {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  opacity: 0.8;
+  max-width: 520px;
+}
+
+.sb-aurora-shell__user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.sb-aurora-shell__user-name {
+  font-weight: 600;
+}
+
+.sb-aurora-shell__role {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
 .sb-aurora-shell__content {
   padding: 2rem;
   border-radius: 32px;
   background: rgba(5, 11, 22, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 35px 80px rgba(5, 11, 22, 0.6);
+  max-width: 1150px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sb-aurora-shell__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.15));
+}
+
+.sb-aurora-shell__summary .summary-label {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+  margin: 0;
+  opacity: 0.75;
+}
+
+.sb-aurora-shell__summary strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 `;
 
