@@ -28,6 +28,8 @@
     gap: 0.5rem;
     font-weight: 600;
     text-transform: none;
+    font-variant-ligatures: none;
+    letter-spacing: 0.02em;
     background: #0f172a;
     color: #fff;
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
@@ -118,6 +120,8 @@
   min-width: 0;
   white-space: nowrap;
   padding-inline: 1.75rem;
+  font-variant-ligatures: none;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: map-get($breakpoints, mobile)) {

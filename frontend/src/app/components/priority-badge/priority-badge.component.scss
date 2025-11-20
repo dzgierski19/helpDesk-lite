@@ -2,22 +2,29 @@
 
 .badge {
   display: inline-block;
-  padding: 0.2rem 0.75rem;
+  padding: 0.25rem 0.9rem;
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: capitalize;
-  color: #fff;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
 }
 
 .priority-low {
-  background-color: $success-color;
+  background: rgba($success-color, 0.25);
+  box-shadow: 0 10px 25px rgba($success-color, 0.35);
 }
 
 .priority-medium {
-  background-color: $accent-color;
+  background: rgba($accent-color, 0.22);
+  box-shadow: 0 10px 25px rgba($accent-color, 0.35);
 }
 
 .priority-high {
-  background-color: $warn-color;
+  background: linear-gradient(135deg, lighten($warn-color, 10%), $warn-color);
+  color: #fff;
+  border-color: rgba($warn-color, 0.4);
+  box-shadow: 0 12px 32px rgba($warn-color, 0.45);
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { TicketStatsService } from './services/ticket-stats.service';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +11,14 @@ import { AuthService } from './services/auth.service';
 export class AppComponent implements OnInit {
   readonly isAuthenticated$ = this.authService.isAuthenticated$;
   readonly currentUser$ = this.authService.currentUser$;
+  readonly liveTickets$ = this.ticketStatsService.totalTickets$;
+  readonly awaitingTriage$ = this.ticketStatsService.newTicketsCount$;
+  readonly avgResponseTime$ = this.ticketStatsService.avgResponseTimeHours$;
 
   constructor(
     private readonly router: Router,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly ticketStatsService: TicketStatsService,
   ) {}
 
   ngOnInit(): void {

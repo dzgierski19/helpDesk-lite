@@ -1,7 +1,7 @@
 import type { StorybookConfig } from "@storybook/angular";
 
 const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx|mdx)"],
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   addons: [
     "@storybook/addon-onboarding",
     "@storybook/addon-links",
@@ -12,6 +12,9 @@ const config: StorybookConfig = {
   framework: {
     name: "@storybook/angular",
     options: {},
+  },
+  docs: {
+    autodocs: true,
   },
 };
 export default config;

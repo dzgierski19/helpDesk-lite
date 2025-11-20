@@ -59,6 +59,46 @@ body.sb-show-main {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+.sb-aurora-shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.15), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.15), transparent 35%),
+    #050b16;
+  padding: 3rem 1.5rem;
+  color: var(--sb-aurora-text);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sb-aurora-shell__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 25px 70px rgba(5, 11, 22, 0.5);
+}
+
+.sb-aurora-shell__brand h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sb-aurora-shell__content {
+  padding: 2rem;
+  border-radius: 32px;
+  background: rgba(5, 11, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 35px 80px rgba(5, 11, 22, 0.6);
+}
 `;
 
 const injectAuroraStyles = (): void => {

@@ -2,13 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable, EMPTY, Subject, of } from 'rxjs';
-import { finalize, catchError, takeUntil, distinctUntilChanged, filter } from 'rxjs/operators';
+import { finalize, catchError, takeUntil, distinctUntilChanged, filter, tap } from 'rxjs/operators';
 import { AuthUser } from '../../models/auth-user.model';
 import { Ticket } from '../../models/ticket.model';
 import { TicketPriority, TicketStatus, UserRole } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
+import { TicketStatsService } from '../../services/ticket-stats.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -31,6 +32,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly uiService: UiService,
     private readonly router: Router,
+    private readonly ticketStatsService: TicketStatsService,
   ) {
     this.filterForm = this.fb.group({
       status: [null],
@@ -75,21 +77,32 @@ export class TicketListComponent implements OnInit, OnDestroy {
       tag?: string;
     } = {};
 
-    if (status) {
+    const hasStatus = !!status;
+    const hasPriority = !!priority;
+    const trimmedTag = (tag ?? '').trim();
+    const hasTag = trimmedTag.length > 0;
+
+    if (hasStatus) {
       filters.status = status;
     }
 
-    if (priority) {
+    if (hasPriority) {
       filters.priority = priority;
     }
 
-    const trimmedTag = (tag ?? '').trim();
-    if (trimmedTag) {
+    if (hasTag) {
       filters.tag = trimmedTag;
     }
 
+    const hasActiveFilters = hasStatus || hasPriority || hasTag;
+
     this.uiService.showLoader();
     this.tickets$ = this.ticketService.getTickets(filters).pipe(
+      tap((tickets) => {
+        if (!hasActiveFilters) {
+          this.ticketStatsService.updateTickets(tickets);
+        }
+      }),
       catchError(() => {
         this.uiService.showSnackbar('Unable to load tickets.');
         return EMPTY;

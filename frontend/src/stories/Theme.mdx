@@ -1,7 +1,12 @@
 import { Meta, Title, Subtitle, Description, ColorPalette, ColorItem, Heading } from '@storybook/blocks';
 import { themeColors } from './theme-tokens';
 
-<Meta title="Design System/Theme" />
+export default {
+  title: 'Design System/Theme',
+  tags: ['docs'],
+};
+
+<Meta />
 
 <Title>Helpdesk Design Theme</Title>
 <Subtitle>Colors, typography, and reusable styling decisions that shape the Helpdesk UI.</Subtitle>
@@ -41,8 +46,8 @@ import { themeColors } from './theme-tokens';
   <p>Helpful when you need one more layer of hierarchy within cards or panels.</p>
 
   <p>
-    Body text defaults to 16px with a 1.5 line-height. Use it for descriptions, comments, and supporting
-    context. Keep paragraphs short for readability.
+    Body text defaults to 16px with a 1.5 line-height. Use it for descriptions, comments, and supporting context. Keep
+    paragraphs short for readability.
   </p>
 
   <small>Caption text communicates metadata like timestamps or helper labels.</small>

@@ -646,6 +646,60 @@ Provide the full, updated content for the `README.md` file.
 
 """
 
+[commands."frontend:dynamic-hero-counters"]
+prompt = """
+As a senior Angular developer, your task is to refactor the hero section in `AppComponent` to display real-time, dynamic ticket statistics instead of static placeholders. This will be achieved by creating a new shared service to manage ticket state reactively.
+
+**Context Files:**
+{{file "frontend/src/app/app.component.html"}}
+{{file "frontend/src/app/app.component.ts"}}
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Create `TicketStatsService`:**
+   - Create a new injectable service at `frontend/src/app/services/ticket-stats.service.ts`.
+   - This service will manage the global state of tickets for statistical purposes.
+   - It should contain a private `BehaviorSubject<Ticket[]>` initialized with an empty array: `private readonly _tickets$ = new BehaviorSubject<Ticket[]>([]);`.
+   - Create a public method `updateTickets(tickets: Ticket[]): void` that calls `this._tickets$.next(tickets)`.
+   - Expose public observables derived from `_tickets$` using the `.pipe(map(...))` operator:
+     - `totalTickets$: Observable<number>`: Emits the total number of tickets (`tickets.length`).
+     - `newTicketsCount$: Observable<number>`: Emits the count of tickets where `status === TicketStatus.New`.
+     - `avgResponseTimeHours$: Observable<string>`:
+       - Calculates the average difference between `updated_at` and `created_at` for all tickets.
+       - The calculation should handle string dates (`new Date(ticket.updated_at).getTime()`).
+       - Convert the average time from milliseconds to hours.
+       - Return the result as a formatted string, e.g., `"18h"`.
+       - If there are no tickets or the calculation results in NaN, it should fall back to the string `"12h"`.
+
+**2. Integrate with `TicketListComponent`:**
+   - Inject the new `TicketStatsService` into `ticket-list.component.ts`.
+   - In the method where you fetch tickets (e.g., `applyFilters`), modify the `ticketService.getTickets()` stream.
+   - Add a `tap(tickets => this.ticketStatsService.updateTickets(tickets))` to the pipe. This will feed the fetched ticket list into the shared service every time it's updated.
+
+**3. Update `AppComponent`:**
+   - Inject `TicketStatsService` into `app.component.ts`.
+   - Create public properties for each stat observable, e.g., `liveTickets$ = this.ticketStatsService.totalTickets$;`.
+   - In `app.component.html`, find the static hero counters.
+   - Replace the hardcoded numbers with bindings to the new observables using the `async` pipe, e.g., `{{ liveTickets$ | async }}`.
+
+**4. Preserve Tests and UI:**
+   - No changes should be made to any `.scss` files. This is a logic and data-binding task only.
+   - Update any unit tests that break, especially `app.component.spec.ts`, by providing a mock for the new `TicketStatsService`.
+   - Ensure `npm run test` and `npm run e2e` continue to pass.
+
+**Acceptance Criteria:**
+- After logging in and the ticket list loads, the hero counters display correct initial values.
+- When a new ticket is created or the list is filtered/refreshed, the "Live tickets" and "Awaiting triage" counters update automatically.
+- The "Avg response" counter displays a calculated value in hours or the fallback value.
+
+Provide the full, updated code for all modified and new files (`app.component.ts`, `app.component.html`, `ticket-list.component.ts`, and the new `ticket-stats.service.ts`).
+
+"""
+
 [commands."frontend:fix-filter-row-alignment"]
 prompt = """
 As an Angular developer specializing in responsive UI/UX, your task is to fix the alignment of the filter row in the `TicketListComponent`. On wide screens (≥1200px), the Status, Priority, Tag fields, and the Filter button should remain perfectly aligned on a single line without wrapping. On smaller breakpoints, the elements should wrap or stack gracefully.

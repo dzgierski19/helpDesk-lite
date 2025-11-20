@@ -8,6 +8,7 @@ import { UiService } from './services/ui.service';
 import { AuthService } from './services/auth.service';
 import { AuthUser } from './models/auth-user.model';
 import { MatIconModule } from '@angular/material/icon';
+import { TicketStatsService } from './services/ticket-stats.service';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -25,12 +26,20 @@ describe('AppComponent', () => {
       logout: jasmine.createSpy('logout').and.returnValue(of(void 0)),
     };
 
+    const ticketStatsServiceStub = {
+      totalTickets$: of(0),
+      newTicketsCount$: of(0),
+      avgResponseTimeHours$: of('12h'),
+      updateTickets: jasmine.createSpy('updateTickets'),
+    };
+
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
       imports: [RouterTestingModule, SharedModule, MatIconModule, NoopAnimationsModule],
       providers: [
         { provide: UiService, useValue: uiServiceStub },
         { provide: AuthService, useValue: authServiceStub },
+        { provide: TicketStatsService, useValue: ticketStatsServiceStub },
       ],
     }).compileComponents();
   });

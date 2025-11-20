@@ -36,15 +36,15 @@
         <ul class="brand-kpis">
           <li>
             <span class="label">Live tickets</span>
-            <strong>18</strong>
+            <strong>{{ liveTickets$ | async }}</strong>
           </li>
           <li>
             <span class="label">Awaiting triage</span>
-            <strong>5</strong>
+            <strong>{{ awaitingTriage$ | async }}</strong>
           </li>
           <li>
             <span class="label">Avg response</span>
-            <strong>12m</strong>
+            <strong>{{ avgResponseTime$ | async }}</strong>
           </li>
         </ul>
       </div>
