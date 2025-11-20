@@ -1,0 +1,30 @@
+:root {
+  --color-primary: #6366f1;
+  --color-accent: #ec4899;
+  --color-warn: #f44336;
+  --color-success: #22c55e;
+  --color-info: #0ea5e9;
+  --color-text: #0f172a;
+  --color-background: #f8fafc;
+  --brand-blue: #38bdf8;
+  --brand-purple: #a855f7;
+  --brand-cyan: #5eead4;
+  --gradient-brand: linear-gradient(120deg, #38bdf8, #a855f7);
+  --gradient-aurora: radial-gradient(circle at top, rgba(56, 189, 248, 0.2), transparent 60%),
+    radial-gradient(circle at bottom, rgba(168, 85, 247, 0.18), transparent 65%),
+    #0f172a;
+  --surface-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
+  --radius-card: 1.25rem;
+  --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.16);
+}
+
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}

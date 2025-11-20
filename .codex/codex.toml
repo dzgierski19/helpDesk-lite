@@ -1,0 +1,1367 @@
+# Auto-generated from .gemini/commands.yaml
+# Run `npm run sync:commands` after editing Gemini slash commands.
+
+[commands."backend:make-controllers"]
+prompt = """
+As a Laravel developer, your task is to generate the necessary API routes and a controller based on the provided `project_spec.md`, existing Enum files, and Model files.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+
+You need to create a `TicketController.php` and modify `api.php` to define the API endpoints.
+
+**1. Create `TicketController.php` (`backend/app/Http/Controllers/TicketController.php`):**
+   - Implement methods for all CRUD operations for tickets (`index`, `store`, `show`, `update`, `destroy`).
+   - Implement `triageSuggest(Request $request, Ticket $ticket)` method.
+   - Implement `externalUserInfo()` method.
+
+   **Specific Logic for Controller Methods:**
+   - **`index(Request $request)`:**
+     - Retrieve tickets, applying filters by `status`, `priority`, `assignee_id`, and `tag` from the request query parameters.
+     - **Authorization Logic:** If the `X-USER-ROLE` header is 'reporter', filter tickets to show only those where `creator_id` matches the ID of the reporter user (assume reporter user ID is 3, as per our seeding plan). Otherwise, return all tickets.
+     - Return tickets as a JSON response.
+   - **`store(Request $request)`:**
+     - Validate incoming request data for `title`, `description`, `priority`, `status`, `assignee_id`, `tags`.
+     - Create a new `Ticket` instance.
+     - Set `creator_id` based on the `X-USER-ROLE` header (assume reporter user ID is 3).
+     - Return the created ticket as a JSON response.
+   - **`show(Ticket $ticket)`:**
+     - Return the specified `Ticket` instance.
+     - Ensure the `assignee` relationship is loaded (e.g., `Ticket::with('assignee')->findOrFail($id)`).
+   - **`update(Request $request, Ticket $ticket)`:**
+     - Validate incoming request data.
+     - If the `status` field is being updated and its value changes, create a new `TicketStatusChange` record.
+     - Update the `Ticket` instance.
+     - Return the updated ticket as a JSON response.
+   - **`destroy(Ticket $ticket)`:**
+     - Delete the specified `Ticket` instance.
+     - Return a success response (e.g., 204 No Content).
+   - **`triageSuggest(Request $request, Ticket $ticket)`:**
+     - Return the hardcoded JSON response as specified in `project_spec.md`: `{"suggested_status": "in_progress", "suggested_priority": "high", "suggested_tags": ["triage", "auto"]}`.
+   - **`externalUserInfo()`:**
+     - Make an HTTP GET request to `https://jsonplaceholder.typicode.com/users/1`.
+     - Cache the response for 10 minutes.
+     - Extract and return only the `name` from the external API response.
+     - Handle potential HTTP request errors (e.g., network issues, API down) by returning `{"error": "external_api_failed"}`.
+
+**2. Modify `api.php` (`backend/routes/api.php`):**
+   - Define API routes for all methods in `TicketController`.
+   - Use `Route::apiResource` for the standard CRUD operations.
+   - Define specific routes for `POST /tickets/{id}/triage-suggest` and `GET /external/user-info`.
+   - Ensure routes are accessible without explicit authentication middleware for now, as per `project_spec.md` (fake login).
+
+Provide the full PHP code for `backend/app/Http/Controllers/TicketController.php` and `backend/routes/api.php`.
+
+"""
+
+[commands."backend:make-migrations"]
+prompt = """
+As a Laravel developer, your task is to generate the necessary database migration files based on the provided `project_spec.md`.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+
+You need to create or modify three migration files for the following models: `User`, `Ticket`, and `TicketStatusChange`.
+
+**1. Users Table Migration (Modify existing):**
+   - Modify the existing `create_users_table` migration to add a `role` column.
+   - `role`: enum with values `admin`, `agent`, `reporter`. This column should be added after the `password` column.
+
+**2. Tickets Table Migration (New file):**
+   - Create a new migration file for the `tickets` table.
+   - Fields:
+     - `id`: primary key, auto-increment.
+     - `title`: string (255), required.
+     - `description`: text, required.
+     - `priority`: enum with values `low`, `medium`, `high`.
+     - `status`: enum with values `new`, `in_progress`, `resolved`.
+     - `assignee_id`: integer, nullable, foreign key to `users.id`.
+     - `creator_id`: integer, required, foreign key to `users.id`.
+     - `tags`: json.
+     - `created_at`: timestamp.
+     - `updated_at`: timestamp.
+   - Ensure foreign key constraints are correctly defined.
+
+**3. TicketStatusChanges Table Migration (New file):**
+   - Create a new migration file for the `ticket_status_changes` table.
+   - Fields:
+     - `id`: primary key, auto-increment.
+     - `ticket_id`: integer, foreign key to `tickets.id`.
+     - `old_status`: enum with values `new`, `in_progress`, `resolved`.
+     - `new_status`: enum with values `new`, `in_progress`, `resolved`.
+     - `changed_at`: timestamp.
+   - Ensure foreign key constraints are correctly defined.
+
+Place all generated migration files in the `backend/database/migrations/` directory.
+Provide the full PHP code for each migration file.
+
+"""
+
+[commands."backend:make-models"]
+prompt = """
+As a Laravel developer, your task is to generate the necessary Eloquent Model files based on the provided `project_spec.md`.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+
+You need to create or modify three Eloquent Model files: `User.php`, `Ticket.php`, and `TicketStatusChange.php`.
+
+**1. User Model (Modify existing `User.php`):**
+   - Add `role` to the `$casts` property, casting it as a string enum. The enum values are `admin`, `agent`, `reporter`.
+   - Define a `ticketsCreated()` relationship: a user can create many tickets (hasMany `Ticket` where `creator_id` is the foreign key).
+   - Define a `ticketsAssigned()` relationship: a user can be assigned many tickets (hasMany `Ticket` where `assignee_id` is the foreign key).
+
+**2. Ticket Model (Create `Ticket.php`):**
+   - Define the `$fillable` property to allow mass assignment for `title`, `description`, `priority`, `status`, `assignee_id`, `creator_id`, `tags`.
+   - Define the `$casts` property for:
+     - `priority`: cast as a string enum (`low`, `medium`, `high`).
+     - `status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+     - `tags`: cast as `array` (Laravel will handle JSON serialization/deserialization).
+   - Define a `assignee()` relationship: a ticket belongs to an `assignee` (belongsTo `User`, using `assignee_id`).
+   - Define a `creator()` relationship: a ticket belongs to a `creator` (belongsTo `User`, using `creator_id`).
+     - Define a `statusChanges()` relationship: a ticket has many `TicketStatusChange` records (hasMany `TicketStatusChange`).
+
+**3. TicketStatusChange Model (Create `TicketStatusChange.php`):**
+   - Define the `$fillable` property to allow mass assignment for `ticket_id`, `old_status`, `new_status`.
+   - Define the `$casts` property for:
+     - `old_status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+     - `new_status`: cast as a string enum (`new`, `in_progress`, `resolved`).
+     - `changed_at`: cast as `datetime`.
+   - Define a `ticket()` relationship: a status change belongs to a `Ticket` (belongsTo `Ticket`).
+
+Place all generated model files in the `backend/app/Models/` directory.
+Provide the full PHP code for each model file.
+
+"""
+
+[commands."backend:make-seeders"]
+prompt = """
+As a Laravel developer, your task is to create database seeders based on the provided `project_spec.md` and the existing Enum files.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+
+Your task is to populate the `run` method of the main `DatabaseSeeder.php` file.
+
+**Instructions:**
+
+1.  **Create Users:**
+    - Create exactly three users using the `User` model factory.
+    - One user for each role defined in the `UserRole` enum (`admin`, `agent`, `reporter`).
+    - Use the `UserRole` enum when setting the role.
+    - Use a static password like 'password' for all users.
+    - Store the created 'reporter' user in a variable for later use.
+
+2.  **Create Tickets:**
+    - Create at least 5 sample tickets using the `Ticket` model factory.
+    - For the `creator_id` of all tickets, use the ID of the 'reporter' user you created above.
+    - For the `assignee_id`, you can randomly assign the 'admin' or 'agent' user, or leave it null on some tickets.
+    - Use the `TicketStatus` and `TicketPriority` enums for the `status` and `priority` fields.
+    - For the `tags` field, provide a sample JSON array of strings (e.g., `['api', 'bug']`).
+    - Use Faker for realistic titles and descriptions.
+
+3.  **Update DatabaseSeeder:**
+    - Ensure the `run()` method in `backend/database/seeders/DatabaseSeeder.php` contains all the logic to create these users and tickets.
+    - Do not add any logic to truncate or refresh the database; just the creation logic.
+
+Provide the full, updated PHP code for the `backend/database/seeders/DatabaseSeeder.php` file.
+
+"""
+
+[commands."backend:make-tests-feature-crud"]
+prompt = """
+As a Laravel developer, your task is to create a feature test file to verify the basic CRUD functionality of the tickets API.
+
+**Context Files:**
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/database/factories/UserFactory.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+{{file "backend/app/Enums/UserRole.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Feature/TicketCrudTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `TicketCrudTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait.
+    - In a `setUp()` method, create one user for each role (`admin`, `agent`, `reporter`) and store them as properties of the test class (e.g., `$this->reporter`, `$this->agent`) for easy access in all tests.
+
+2.  **Test `POST /api/tickets` (Store):**
+    - Write a test method `test_it_can_create_a_ticket()`.
+    - Prepare valid ticket data (title, description, priority, etc.).
+    - Send a `POST` request to `/api/tickets` with the data, including the `X-USER-ROLE` header set to `reporter`.
+    - Assert the response status is `201 Created`.
+    - Assert the response JSON structure contains the created ticket data.
+    - Assert that the new ticket exists in the `tickets` table.
+    - Assert that the `tickets` table contains the correct `tags` data (using `json_encode`).
+    - Assert that the `creator_id` on the created ticket matches the ID of `$this->reporter`.
+
+3.  **Test `GET /api/tickets/{id}` (Show):**
+    - Write a test method `test_it_can_show_a_ticket()`.
+    - Create a ticket using its factory.
+    - Send a `GET` request to `/api/tickets/{ticket_id}`.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON contains the correct ticket data (e.g., `data.title`) and the eager-loaded `assignee` relationship.
+
+4.  **Test `PUT /api/tickets/{id}` (Update):**
+    - Write a test method `test_it_can_update_a_ticket()`.
+    - Create a ticket.
+    - Prepare an array with new data (e.g., a new `title` and `status`, and `tags`).
+    - Send a `PUT` request to `/api/tickets/{ticket_id}` with the new data, including the `X-USER-ROLE` header set to `admin` (or any valid role).
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON contains the updated data.
+    - Assert the `tickets` table in the database reflects the update.
+    - Assert that the `tickets` table contains the correct `tags` data (using `json_encode`) if tags were updated.
+
+5.  **Test `DELETE /api/tickets/{id}` (Destroy):**
+    - Write a test method `test_it_can_delete_a_ticket()`.
+    - Create a ticket.
+    - Send a `DELETE` request to `/api/tickets/{ticket_id}`, including the `X-USER-ROLE` header set to `admin` (or any valid role).
+    - Assert the response status is `204 No Content`.
+    - Assert the ticket is missing from the `tickets` table (`assertDatabaseMissing`).
+
+Provide the full PHP code for `backend/tests/Feature/TicketCrudTest.php`.
+
+"""
+
+[commands."backend:make-tests-feature-logic"]
+prompt = """
+As a Laravel developer, your task is to create a feature test file to verify the key business logic of the tickets API, including filtering, authorization, and side effects.
+
+**Context Files:**
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+{{file "backend/database/factories/UserFactory.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Feature/TicketLogicTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `TicketLogicTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait.
+    - In a `setUp()` method, create one user for each role (`admin`, `agent`, `reporter`) and store them as properties of the test class for easy access.
+
+2.  **Test Filtering Logic (`index` endpoint):**
+    - Write a test method `test_it_filters_tickets_by_status()`.
+    - Create several tickets: two with `status: 'new'` and one with `status: 'in_progress'`.
+    - Send a `GET` request to `/api/tickets?status=new` with the `X-USER-ROLE` header set to `admin`.
+    - Assert the response status is `200 OK`.
+    - Assert that the response JSON contains exactly 2 items.
+    - Assert that the `id` of the 'in_progress' ticket is NOT present in the response.
+
+3.  **Test Authorization Logic (`index` endpoint):**
+    - Write a test method `test_reporter_can_only_see_their_own_tickets()`.
+    - Create two reporter users, `$reporter1` and `$reporter2`.
+    - Create a ticket with `$reporter1` as the creator.
+    - Create a ticket with `$reporter2` as the creator.
+    - Send a `GET` request to `/api/tickets` with the `X-USER-ROLE` header set to `reporter`. **Important:** The controller logic currently finds the first user with the 'reporter' role. Ensure your test setup reflects this by making `$reporter1` the first one created.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON contains the ticket created by `$reporter1`.
+    - Assert the response JSON does NOT contain the ticket created by `$reporter2`.
+
+4.  **Test Status Change Logging (`update` endpoint):**
+    - Write a test method `test_it_logs_status_change_on_update()`.
+    - Create a ticket with `status: 'new'`.
+    - Assert that the `ticket_status_changes` table is empty for this ticket's ID.
+    - Send a `PUT` request to `/api/tickets/{ticket_id}` with a new `status: 'in_progress'`.
+    - Assert the response status is `200 OK`.
+    - Assert that the `ticket_status_changes` table now has one record for this ticket.
+    - Assert that this new record has `old_status: 'new'` and `new_status: 'in_progress'`.
+
+Provide the full PHP code for `backend/tests/Feature/TicketLogicTest.php`.
+
+"""
+
+[commands."backend:make-tests-feature-services"]
+prompt = """
+As a Laravel developer, your task is to create a feature test file for the remaining, non-CRUD API endpoints, including mocking external services and testing cache behavior.
+
+**Context Files:**
+{{file "backend/routes/api.php"}}
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `ExtraApiEndpointsTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait.
+
+2.  **Test `triage-suggest` Endpoint:**
+    - Write a test method `test_triage_suggest_returns_correct_mock_response()`.
+    - Create a `Ticket` using its factory.
+    - Send a `POST` request to the `/api/tickets/{ticket}/triage-suggest` endpoint.
+    - Assert the response status is `200 OK`.
+    - Assert the response JSON exactly matches the expected mock structure: `{"suggested_status": "in_progress", "suggested_priority": "high", "suggested_tags": ["triage", "auto"]}`.
+
+3.  **Test `external-user-info` Endpoint (Success & Caching):**
+    - Write a test method `test_external_user_info_returns_name_and_caches_response()`.
+    - Use `Http::fake()` to mock the external API. Define a fake response for `https://jsonplaceholder.typicode.com/users/1` that returns a `200` status and `['name' => 'Leanne Graham']`.
+    - **First call:** Send a `GET` request to `/api/external-user-info`.
+      - Assert status `200 OK`.
+      - Assert the response JSON is `['name' => 'Leanne Graham']`.
+      - Assert that the HTTP request was sent to the correct URL (`Http::assertSent(...)`).
+    - **Second call:** Send another `GET` request to the same endpoint.
+      - Assert status `200 OK`.
+    - **Verify Caching:** Assert that the HTTP request was only sent once in total (`Http::assertSentCount(1)`). This proves the cache is working.
+
+4.  **Test `external-user-info` Endpoint (Failure):**
+    - Write a test method `test_external_user_info_handles_api_failure()`.
+    - Use `Http::fake()` to mock the external API, but this time return a `500` server error for the URL.
+    - Send a `GET` request to `/api/external-user-info`.
+    - Assert the response status is `502 Bad Gateway`.
+    - Assert the response JSON is `['error' => 'external_api_failed']`.
+
+Provide the full PHP code for `backend/tests/Feature/ExtraApiEndpointsTest.php`.
+
+"""
+
+[commands."backend:make-tests-unit"]
+prompt = """
+As a Laravel developer, your task is to create unit tests for the Eloquent model relationships based on the provided `project_spec.md` and the existing model and enum files.
+The database used is PostgreSQL.
+
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+{{file "backend/database/factories/UserFactory.php"}}
+{{file "backend/database/factories/TicketFactory.php"}}
+
+You need to create a new PHPUnit test file: `backend/tests/Unit/ModelRelationshipsTest.php`.
+
+**Instructions:**
+
+1.  **Test File Setup:**
+    - Create a test class `ModelRelationshipsTest` that extends `Tests\TestCase`.
+    - Use the `RefreshDatabase` trait to ensure a clean database state for each test.
+
+2.  **User Model Relationship Tests:**
+    - Write a test method `test_user_has_many_created_tickets()`:
+      - Create a `User` (reporter role).
+      - Create several `Ticket` instances, associating them with this user as the `creator`.
+      - Assert that `user->ticketsCreated` returns a collection of `Ticket` instances and contains the correct number of tickets.
+    - Write a test method `test_user_has_many_assigned_tickets()`:
+      - Create a `User` (agent role).
+      - Create several `Ticket` instances, associating them with this user as the `assignee`.
+      - Assert that `user->ticketsAssigned` returns a collection of `Ticket` instances and contains the correct number of tickets.
+
+3.  **Ticket Model Relationship Tests:**
+    - Write a test method `test_ticket_belongs_to_creator()`:
+      - Create a `User` and a `Ticket` with this user as `creator`.
+      - Assert that `ticket->creator` returns an instance of `User`.
+    - Write a test method `test_ticket_belongs_to_assignee()`:
+      - Create a `User` and a `Ticket` with this user as `assignee`.
+      - Assert that `ticket->assignee` returns an instance of `User`.
+    - Write a test method `test_ticket_has-many-status-changes()`:
+      - Create a `Ticket`.
+      - Create several `TicketStatusChange` instances, associating them with this ticket.
+      - Assert that `ticket->statusChanges` returns a collection of `TicketStatusChange` instances and contains the correct number of changes.
+
+4.  **TicketStatusChange Model Relationship Tests:**
+    - Write a test method `test_ticket_status_change_belongs_to_ticket()`:
+      - Create a `Ticket` and a `TicketStatusChange` with this ticket.
+      - Assert that `statusChange->ticket` returns an instance of `Ticket`.
+
+**General Guidelines:**
+- Use model factories to create test data efficiently.
+- Ensure all necessary `use` statements are present.
+
+Provide the full PHP code for `backend/tests/Unit/ModelRelationshipsTest.php`.
+
+"""
+
+[commands."backend:refactor-controller"]
+prompt = """
+As a Laravel developer, your task is to refactor the existing `TicketController.php` to eliminate hard-coded user IDs and replace them with a dynamic, database-driven approach.
+
+**Context Files:**
+{{file "backend/app/Http/Controllers/TicketController.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Enums/UserRole.php"}}
+
+**Problem:**
+The current `TicketController.php` uses a hard-coded constant `REPORTER_USER_ID` and a `resolveCreatorId` method with hard-coded IDs (1, 2, 3). This is brittle and will break if the database seed order changes.
+
+**Refactoring Instructions:**
+
+1.  **Remove Hard-Coded Logic:**
+    - Delete the `private const REPORTER_USER_ID = 3;` constant.
+    - Delete the `private function resolveCreatorId(...)` method.
+
+2.  **Create a Dynamic Helper Method:**
+    - Create a new private helper method, for example, `getUserIdByRole(UserRole $role): ?int`.
+    - This method should accept a `UserRole` enum case.
+    - It should query the `users` table to find the ID of the first user with that role (e.g., `User::where('role', $role)->value('id')`).
+    - **Important:** Cache the result of this query for 1 minute to improve performance and avoid hitting the database on every request for the same role. The cache key should be dynamic based on the role (e.g., `user_id_for_role_{$role->value}`).
+
+3.  **Update the `index` Method:**
+    - In the authorization logic for reporters, replace the hard-coded ID with a call to your new helper method: `$query->where('creator_id', $this->getUserIdByRole(UserRole::Reporter));`.
+
+4.  **Update the `store` Method:**
+    - In the logic for setting `creator_id`, replace the call to `resolveCreatorId`.
+    - The `creator_id` should be determined by finding the user ID for the 'reporter' role. For this MVP, we can assume the creator is always the main reporter. Use your new helper method: `$this->getUserIdByRole(UserRole::Reporter)`.
+
+Provide the full, refactored PHP code for `backend/app/Http/Controllers/TicketController.php` file.
+
+"""
+
+[commands."backend:refactor-tests-unit"]
+prompt = """
+As a Laravel developer, your task is to refactor existing unit tests to use model factories correctly and to improve assertion quality.
+
+**Context Files:**
+{{file "backend/tests/Unit/ModelRelationshipsTest.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+
+**Tasks:**
+
+**1. Create `TicketStatusChangeFactory.php`:**
+   - Create a new model factory at `backend/database/factories/TicketStatusChangeFactory.php`.
+   - The factory should be for the `TicketStatusChange` model.
+   - The `definition()` method should return sensible defaults:
+     - `ticket_id`: Should be associated with a `Ticket` factory.
+     - `old_status`: A random value from the `TicketStatus` enum.
+     - `new_status`: A random value from the `TicketStatus` enum.
+     - `changed_at`: Should use `now()`.
+
+**2. Refactor `ModelRelationshipsTest.php`:**
+   - Modify the existing `backend/tests/Unit/ModelRelationshipsTest.php` file.
+   - **Use the new factory:** In the `test_ticket_has-many-status-changes` method, replace the `TicketStatusChange::create()` call with the new `TicketStatusChangeFactory`.
+   - **Improve `hasMany` assertions:**
+     - In `test_user_has-many-created-tickets`, after asserting the count, add an assertion to verify the inverse relationship. Iterate through the collection and check that each ticket's `creator` is the original user. Example: `$user->ticketsCreated->each(fn (Ticket $ticket) => $this->assertTrue($ticket->creator->is($user)));`
+     - In `test_user_has-many-assigned-tickets`, do the same for the `assignee` relationship. Example: `$user->ticketsAssigned->each(fn (Ticket $ticket) => $this->assertTrue($ticket->assignee->is($user)));`
+
+Provide the full PHP code for the two new/modified files:
+1. `backend/database/factories/TicketStatusChangeFactory.php`
+2. `backend/tests/Unit/ModelRelationshipsTest.php`
+
+"""
+
+[commands."ci:add-e2e-tests"]
+prompt = """
+As a DevOps engineer, your task is to update the existing GitHub Actions workflow to include a new step for running frontend End-to-End (E2E) tests with Playwright.
+
+**Context File:**
+{{file ".github/workflows/ci.yml"}}
+
+**Instructions:**
+
+1.  Locate the `frontend-tests` job in the `.github/workflows/ci.yml` file.
+2.  After the step named "Run unit tests", add a new step to execute the E2E tests.
+3.  This new step should have the following properties:
+    - `name`: "Run E2E tests"
+    - `working-directory`: "frontend"
+    - `run`: "npm run e2e"
+
+Provide the full, updated YAML content for the `.github/workflows/ci.yml` file.
+
+"""
+
+[commands."frontend:integrate-ui"]
+prompt = """
+As an Angular developer, your task is to integrate and refine the UI for the ticket list and ticket details pages. This involves adding filtering, loading/empty states, and improving the responsive layout and user feedback.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.scss"}}
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Refactor `TicketListComponent`:**
+   - **`ticket-list.component.ts`:**
+     - Use a `FormGroup` to manage filter controls for `status`, `priority`, and `tag`.
+     - Create a method `applyFilters()` that reads values from the form and calls `this.ticketService.getTickets()` with the filters.
+     - In `ngOnInit`, call `applyFilters()` initially to load all tickets.
+     - Add a public property `isLoading$` from `uiService.loading$`.
+   - **`ticket-list.component.html`:**
+     - Create a `<form>` with the `FormGroup`. Add `mat-form-field` controls for status (`mat-select`), priority (`mat-select`), and tag (`input`). Add a "Filter" button.
+     - Use `*ngIf="isLoading$ | async"` to show a loading indicator (e.g., `mat-progress-bar`) above the ticket list.
+     - Use `*ngIf` on the ticket list container (`*ngIf="(tickets$ | async) as tickets"`) to handle the observable.
+     - Inside, add an empty state message (`*ngIf="!tickets.length"`) like "No tickets found." that shows when the list is empty.
+     - Ensure the responsive layout with `.desktop-view` (table) and `.mobile-view` (cards) is correctly implemented.
+   - **`ticket-list.component.scss`:**
+     - Add styles for the filter form, ensuring it's well-aligned and responsive.
+
+**2. Refactor `TicketDetailsComponent`:**
+   - **`ticket-details.component.ts`:**
+     - Inject `UiService`.
+     - In `loadTriageSuggestion`, `acceptTriageSuggestion`, and `rejectTriageSuggestion`, use `uiService.showLoader()` and `uiService.hideLoader()` to manage the loading state during the async operations.
+     - Use `uiService.showSnackbar()` to provide feedback to the user on success (e.g., "Triage suggestion accepted!") or failure.
+     - Modify the `getTicket` call to include error handling. If the ticket is not found (e.g., 404 error), set a flag like `ticketFound = false`.
+   - **`ticket-details.component.html`:**
+     - Add a top-level `*ngIf` to show an "Ticket not found" message if `ticketFound` is false.
+     - Restructure the layout:
+       - Use `<app-ticket-card>` at the top to show a summary of the ticket.
+       - Below the card, create separate sections (e.g., using `mat-card` or `mat-expansion-panel`) for "Full Description", "Status History", and "Triage".
+   - **`ticket-details.component.scss`:**
+     - Refine the responsive layout. Ensure the new sections stack vertically on mobile and are well-spaced.
+
+Provide the full, updated code for all modified TypeScript, HTML, and SCSS files.
+
+"""
+
+[commands."frontend:make-additional-tests"]
+prompt = """
+As an Angular developer, your task is to create specific unit tests for key parts of the application, focusing on HTTP interactions and component logic.
+
+**Context Files:**
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.ts"}}
+{{file "frontend/src/app/interceptors/auth.interceptor.ts"}}
+{{file "frontend/src/app/components/loader/loader.component.ts"}}
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+Create or update the following `.spec.ts` files with the specified tests. Use `TestBed` for configuration and provide mocks for all dependencies.
+
+**1. `frontend/src/app/services/ticket.service.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `HttpClientTestingModule`. Get `HttpTestingController` and mock `AuthService`.
+   - **`getTickets() should build correct params and headers`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Admin`.
+     - Call `getTickets()` with filters (e.g., `{ status: TicketStatus.New, tag: 'api' }`).
+     - Use `httpMock.expectOne()` to catch the request.
+     - Assert that the request URL includes the correct query params (`?status=new&tag=api`).
+     - Assert that the request headers include `X-USER-ROLE: admin`.
+     - Flush the mock request.
+
+**2. `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`:**
+   - **Setup:** Configure `TestBed`. Mocks for `ActivatedRoute`, `TicketService`, `AuthService`, `Router`.
+   - **`loadTriageSuggestion() should fetch suggestion and set property`**:
+     - Mock `ticketService.getTriageSuggestion()` to return a mock suggestion.
+     - Call `component.loadTriageSuggestion(1)`.
+     - Assert that `component.triageSuggestion` is set to the mock suggestion.
+   - **`acceptTriageSuggestion() should call updateTicket with correct data`**:
+     - Set `component.triageSuggestion` to a mock suggestion.
+     - Mock `ticketService.updateTicket()` to return an observable.
+     - Call `component.acceptTriageSuggestion(1)`.
+     - Assert that `ticketService.updateTicket` was called with the correct ID and the data from `triageSuggestion`.
+
+**3. `frontend/src/app/interceptors/auth.interceptor.spec.ts`:**
+   - **Setup:** `TestBed` with `HttpClientTestingModule`. Mocks for `AuthService`.
+   - **`should add X-USER-ROLE header when role exists`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Agent`.
+     - Make a test HTTP call.
+     - Use `httpMock.expectOne()` to catch the request.
+     - Assert that `req.headers.has('X-USER-ROLE')` is true and the value is `agent`.
+   - **`should NOT add X-USER-ROLE header when role is null`**:
+     - Mock `authService.getSnapshotUserRole()` to return `null`.
+     - Make a test HTTP call.
+     - Use `httpMock.expectOne()` to catch the request.
+     - Assert that `req.headers.has('X-USER-ROLE')` is false.
+
+**4. `frontend/src/app/components/loader/loader.component.spec.ts`:**
+   - **Setup:** `TestBed`. Mock for `UiService` using a `BehaviorSubject` for `loading$`.
+   - **`should show spinner when isLoading$ is true`**:
+     - Set `uiService.loading$.next(true)`.
+     - `fixture.detectChanges()`.
+     - Assert that the spinner element exists in the component's native element.
+   - **`should not show spinner when isLoading$ is false`**:
+     - Set `uiService.loading$.next(false)`.
+     - `fixture.detectChanges()`.
+     - Assert that the spinner element does not exist.
+
+Provide the full TypeScript code for all four new or updated `.spec.ts` files.
+
+"""
+
+[commands."frontend:make-e2e-login-flow"]
+prompt = """
+As a frontend developer, your task is to set up End-to-End (E2E) testing with Playwright and create a basic login and navigation flow test.
+
+**Context Files:**
+{{file "frontend/package.json"}}
+{{file "frontend/src/app/components/login/login.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+
+**Instructions:**
+
+**1. Install and Configure Playwright:**
+   - Run `npx playwright install --with-deps` inside the `frontend` directory to install Playwright and its browser dependencies.
+   - Create a `playwright.config.ts` file in the `frontend` directory. Configure it to:
+     - Use a `baseURL` of `http://localhost:4200`.
+     - Point to test files in an `e2e` directory.
+     - Include a `webServer` block to automatically start the Angular dev server (`npm run start`) before running tests. This is crucial for CI.
+
+**2. Update `package.json`:**
+   - In `frontend/package.json`, add a new script: `"e2e": "playwright test"`.
+
+**3. Create the E2E Test File (`frontend/e2e/login-flow.spec.ts`):**
+   - Create a new test file for the login and navigation flow.
+   - Write a test case named 'should allow a user to log in, view the ticket list, and see ticket details'.
+   - The test should perform the following steps:
+     a. **Navigate to Login:** Go to the base URL (`/`). The app should redirect to `/login`.
+     b. **Select Role:** Find the button for the 'Agent' role and click it.
+     c. **Verify Ticket List:**
+        - Assert that the URL is now `/tickets`.
+        - Assert that the ticket list container (e.g., a `mat-table` or `.mobile-view`) is visible.
+     d. **Navigate to Ticket Details:**
+        - Find the first ticket in the list (either a table row or a ticket card) and click its "View Details" button/link.
+     e. **Verify Ticket Details:**
+        - Assert that the URL matches the pattern `/tickets/\d+`.
+        - Assert that a key element of the details page, like the `mat-card-title` containing the ticket title, is visible.
+
+Provide the full code for the new `playwright.config.ts` and `frontend/e2e/login-flow.spec.ts` files, and the modified `frontend/package.json`.
+
+"""
+
+[commands."frontend:make-interceptor"]
+prompt = """
+As an an Angular developer, your task is to create an HTTP Interceptor that automatically adds the `X-USER-ROLE` header to outgoing API requests, based on the currently selected role from the `AuthService`. You also need to register this interceptor in `app.module.ts`.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/app.module.ts"}}
+
+**Instructions:**
+
+**1. Create `AuthInterceptor` in `frontend/src/app/interceptors/auth.interceptor.ts`:**
+   - Create an injectable Angular interceptor (`@Injectable()`).
+   - Inject `AuthService`.
+   - Implement the `HttpInterceptor` interface.
+   - In the `intercept` method:
+     - Retrieve the current user role using `this.authService.getSnapshotUserRole()`.
+     - If a role is available (not null), clone the incoming `HttpRequest` and add an `X-USER-ROLE` header with the value of the current role.
+     - If no role is available, proceed with the original request.
+     - Return `next.handle(modifiedRequest)`.
+
+**2. Register `AuthInterceptor` in `frontend/src/app/app.module.ts`:**
+   - Import `AuthInterceptor` and `HTTP_INTERCEPTORS` from `@angular/common/http`.
+   - Add the `AuthInterceptor` to the `providers` array. Ensure it's provided with `multi: true`.
+
+Provide the full TypeScript code for:
+1. `frontend/src/app/interceptors/auth.interceptor.ts`
+2. `frontend/src/app/app.module.ts`
+
+"""
+
+[commands."frontend:make-loader-interceptor"]
+prompt = """
+As an Angular developer, your task is to create an HTTP interceptor that automatically manages the global loading state and displays error notifications using the previously created `UiService`.
+
+**Context Files:**
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/app.module.ts"}}
+
+**Instructions:**
+
+**1. Create `LoaderInterceptor` (`frontend/src/app/interceptors/loader.interceptor.ts`):**
+   - Create an injectable class (`@Injectable()`) that implements `HttpInterceptor`.
+   - Inject `UiService`.
+   - Implement the `intercept(request: HttpRequest<any>, next: HttpHandler)` method:
+     - Call `this.uiService.showLoader()` before handling the request.
+     - Return `next.handle(request).pipe(...)`:
+       - Use `finalize(() => this.uiService.hideLoader())` to hide the loader when the request completes (success or error).
+       - Use `catchError((error: HttpErrorResponse) => { ... })` to handle HTTP errors:
+         - Construct an error message (e.g., `Wystąpił błąd: ${error.error?.message || error.message}`).
+         - Call `this.uiService.showSnackbar(errorMessage)`.
+         - Re-throw the error using `return throwError(() => error)`.
+     - Ensure necessary imports (`HttpRequest`, `HttpHandler`, `HttpEvent`, `Observable`, `finalize`, `catchError`, `throwError`, `HttpErrorResponse`) are present.
+
+**2. Modify `app.module.ts` (`frontend/src/app/app.module.ts`):**
+   - Import `LoaderInterceptor` and `HTTP_INTERCEPTORS` from `@angular/common/http`.
+   - Add `LoaderInterceptor` to the `providers` array, ensuring it is provided with `multi: true`.
+
+Provide the full TypeScript code for the new `loader.interceptor.ts` file and the modified `app.module.ts` file.
+
+"""
+
+[commands."frontend:make-login-component"]
+prompt = """
+As an Angular developer, your task is to create a `LoginComponent`. This component will serve as a "fake login" screen where the user can select their role.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Create `LoginComponent` in `frontend/src/app/components/login/`:**
+   - **`login.component.ts`:**
+     - Inject `AuthService` and `Router`.
+     - Expose the `UserRole` enum values to the template (e.g., `userRoles = Object.values(UserRole);`).
+     - Create a public method `onLogin(role: UserRole)`.
+     - This method should call `this.authService.login(role)` and then navigate the user to the `/tickets` route using `this.router.navigate(['/tickets']);`.
+   - **`login.component.html`:**
+     - Use Angular Material components for a clean UI.
+     - Create a `mat-card` to act as a container.
+     - Inside the card, add a `mat-card-title` with text like "Select Your Role".
+     - Use an `*ngFor` to iterate over the `userRoles` array.
+     - For each role, render a `<button mat-raised-button color="primary">` that displays the role name.
+     - The button's `(click)` event should call the `onLogin(role)` method.
+   - **`login.component.scss`:**
+     - Add styles to center the login card both vertically and horizontally on the page.
+     - Use flexbox for layout and add some margin between the buttons.
+
+Provide the full code for all three new files: `login.component.ts`, `login.component.html`, and `login.component.scss`.
+
+"""
+
+[commands."frontend:make-responsive"]
+prompt = """
+As an Angular developer, your task is to make the application's key components responsive, ensuring they provide a good user experience on both mobile and desktop screens.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.scss"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.html"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.scss"}}
+{{file "frontend/src/styles/_theme.scss"}} # For breakpoint variables
+
+**Instructions:**
+
+**1. Define Breakpoints in Theme:**
+   - In `frontend/src/styles/_theme.scss`, add a map for breakpoints, e.g., `$breakpoints: (mobile: 768px);`.
+
+**2. Refactor `TicketListComponent` for Responsiveness:**
+   - **`ticket-list.component.html`:**
+     - Keep the `mat-table` for desktop views. Wrap it in a `div` with a class like `.desktop-view`.
+     - Add a new `div` with a class like `.mobile-view`.
+     - Inside `.mobile-view`, use an `*ngFor` to iterate over the `(tickets$ | async)` and render an `<app-ticket-card>` for each ticket.
+     - Pass the `ticket` object and the current `userRole` to each `app-ticket-card`.
+   - **`ticket-list.component.scss`:**
+     - Use a media query (e.g., `@media (max-width: map-get($breakpoints, mobile))`) to control visibility.
+     - Hide `.desktop-view` and show `.mobile-view` on small screens.
+     - Hide `.mobile-view` and show `.desktop-view` on large screens.
+
+**3. Make `TicketDetailsComponent` Responsive:**
+   - **`ticket-details.component.html`:**
+     - The current layout is likely a single `mat-card`. Ensure its content can wrap and stack naturally. If it uses flexbox, change `flex-direction` to `column` on mobile.
+   - **`ticket-details.component.scss`:**
+     - Add a media query to adjust the layout for mobile. For example, make flex containers stack vertically (`flex-direction: column`) and ensure padding is appropriate for smaller screens.
+
+**4. Adjust `TicketCardComponent`:**
+   - **`ticket-card.component.scss`:**
+     - Ensure the card takes up the full width on mobile screens (`width: 100%`) and has a reasonable `max-width` on desktop.
+
+Provide the full code for all modified files.
+
+"""
+
+[commands."frontend:make-routing-and-guards"]
+prompt = """
+As an Angular developer, your task is to establish the application's routing structure. This includes creating an `AppRoutingModule`, implementing route guards for authentication and role-based access control, and updating the main `AppModule`.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/app.module.ts"}}
+
+**Instructions:**
+
+**1. Create `AuthGuard` (`frontend/src/app/guards/auth.guard.ts`):**
+   - Create a new functional route guard.
+   - Inject `AuthService` and `Router`.
+   - The guard should check if a user role exists using `authService.getSnapshotUserRole()`.
+   - If a role exists, return `true`.
+   - If no role exists, redirect the user to the `/login` page by returning `router.parseUrl('/login')`.
+
+**2. Create `RoleGuard` (`frontend/src/app/guards/role.guard.ts`):**
+   - Create a new functional route guard.
+   - Inject `AuthService`.
+   - The guard should read an array of allowed roles from the route's `data` property (e.g., `route.data['roles'] as UserRole[]`).
+   - It should compare the current user's role (`authService.getSnapshotUserRole()`) against the allowed roles.
+   - Return `true` if the user's role is in the allowed list, otherwise return `false`.
+
+**3. Create `AppRoutingModule` (`frontend/src/app/app-routing.module.ts`):**
+   - Create a new routing module.
+   - Import `LoginComponent`, `TicketListComponent`, and `TicketDetailsComponent`.
+   - Define the application routes:
+     - `{ path: 'login', component: LoginComponent }`
+     - `{ path: 'tickets', component: TicketListComponent, canActivate: [AuthGuard] }`
+     - `{ path: 'tickets/:id', component: TicketDetailsComponent, canActivate: [AuthGuard] }`
+     - `{ path: '', redirectTo: '/tickets', pathMatch: 'full' }`
+     - `{ path: '**', redirectTo: '/tickets' }` // Wildcard route
+   - Configure the `@NgModule` to import `RouterModule.forRoot(routes)` and export `RouterModule`.
+
+**4. Modify `AppModule` (`frontend/src/app/app.module.ts`):**
+   - Import the newly created `AppRoutingModule`.
+   - Add `AppRoutingModule` to the `imports` array of `AppModule`.
+
+Provide the full code for all four new/modified files.
+
+"""
+
+[commands."frontend:make-services"]
+prompt = """
+As an Angular developer, your task is to create data services and TypeScript interfaces/models for the frontend application, mirroring the backend data structures and API endpoints.
+
+**Context Files (for backend data structure reference):**
+{{file "project_spec.md"}}
+{{file "backend/app/Enums/UserRole.php"}}
+{{file "backend/app/Enums/TicketPriority.php"}}
+{{file "backend/app/Enums/TicketStatus.php"}}
+{{file "backend/app/Models/User.php"}}
+{{file "backend/app/Models/Ticket.php"}}
+{{file "backend/app/Models/TicketStatusChange.php"}}
+
+**Instructions:**
+
+**1. Create Interfaces/Models in `frontend/src/app/models/`:**
+   - **`frontend/src/app/models/user.model.ts`:**
+     - Define a TypeScript interface `User` with properties: `id: number`, `name: string`, `email: string`, `role: UserRole`.
+   - **`frontend/src/app/models/ticket.model.ts`:**
+     - Define a TypeScript interface `Ticket` with properties: `id: number`, `title: string`, `description: string`, `priority: TicketPriority`, `status: TicketStatus`, `assignee_id: number | null`, `creator_id: number`, `tags: string[]`, `created_at: string`, `updated_at: string`.
+   - **`frontend/src/app/models/ticket-status-change.model.ts`:**
+     - Define a TypeScript interface `TicketStatusChange` with properties: `id: number`, `ticket_id: number`, `old_status: TicketStatus`, `new_status: TicketStatus`, `changed_at: string`.
+   - **`frontend/src/app/models/enums.ts`:**
+     - Define TypeScript enums `UserRole`, `TicketPriority`, `TicketStatus` that mirror the values from the corresponding PHP enums in the backend.
+
+**2. Create `AuthService` in `frontend/src/app/services/auth.service.ts`:**
+   - Create an injectable Angular service (`@Injectable()`).
+   - It should manage the currently "logged in" user's role. Use a `BehaviorSubject<UserRole | null>` named `currentUserRole$` to hold the current role, initialized to `null`.
+   - **Implement `localStorage` persistence:**
+     - On service initialization, attempt to load the role from `localStorage`.
+     - In `login(role: UserRole)`, store the role in `localStorage`.
+     - In `logout()`, remove the role from `localStorage`.
+   - Provide methods:
+     - `login(role: UserRole): void`: Sets the `currentUserRole$` to the provided role and stores it in `localStorage`.
+     - `logout(): void`: Sets `currentUserRole$` to `null` and removes the role from `localStorage`.
+     - `getCurrentUserRole(): Observable<UserRole | null>`: Returns `currentUserRole$`.
+     - `getSnapshotUserRole(): UserRole | null`: Returns the current value of `currentUserRole$`.
+
+**3. Create `TicketService` in `frontend/src/app/services/ticket.service.ts`:**
+   - Create an injectable Angular service (`@Injectable()`).
+   - Inject `HttpClient` and `AuthService`.
+   - Define a `private apiUrl = '/api';`.
+   - Implement the following methods, making HTTP requests to the backend API and returning `Observable`s:
+     - `getTickets(filters?: { status?: TicketStatus, priority?: TicketPriority, assignee_id?: number, tag?: string }): Observable<Ticket[]>` (GET /api/tickets)
+       - Construct query parameters from `filters`.
+       - Add `X-USER-ROLE` header using `AuthService.getSnapshotUserRole()`.
+     - `getTicket(id: number): Observable<Ticket>` (GET /api/tickets/{id})
+       - Add `X-USER-ROLE` header.
+     - `createTicket(ticket: Partial<Ticket>): Observable<Ticket>` (POST /api/tickets)
+       - Add `X-USER-ROLE` header.
+     - `updateTicket(id: number, ticket: Partial<Ticket>): Observable<Ticket>` (PUT /api/tickets/{id})
+       - Add `X-USER-ROLE` header.
+     - `deleteTicket(id: number): Observable<void>` (DELETE /api/tickets/{id})
+       - Add `X-USER-ROLE` header.
+     - `getTriageSuggestion(id: number): Observable<{ suggested_status: TicketStatus, suggested_priority: TicketPriority, suggested_tags: string[] }>` (POST /api/tickets/{id}/triage-suggest)
+       - Add `X-USER-ROLE` header.
+     - `getExternalUserInfo(): Observable<{ name: string }>` (GET /api/external/user-info)
+       - Add `X-USER-ROLE` header.
+
+Provide the full TypeScript code for all the files mentioned above.
+
+"""
+
+[commands."frontend:make-storybook-presentational-stories"]
+prompt = """
+As an Angular developer, your task is to create Storybook stories for the `PriorityBadgeComponent` and `StatusLabelComponent`. These stories should demonstrate the components with different input values and provide interactive controls.
+
+**Context Files:**
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Create Story for `PriorityBadgeComponent` (`frontend/src/app/components/priority-badge/priority-badge.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `PriorityBadgeComponent` and `TicketPriority` enum.
+   - Define the `meta` object:
+     - `component: PriorityBadgeComponent`
+     - `title: 'Components/PriorityBadge'`
+     - `tags: ['autodocs']`
+     - `argTypes`: Define controls for the `priority` input, allowing users to select `low`, `medium`, or `high`.
+   - Create individual stories (e.g., `Low`, `Medium`, `High`) demonstrating each priority level.
+
+**2. Create Story for `StatusLabelComponent` (`frontend/src/app/components/status-label/status-label.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `StatusLabelComponent` and `TicketStatus` enum.
+   - Define the `meta` object:
+     - `component: StatusLabelComponent`
+     - `title: 'Components/StatusLabel'`
+     - `tags: ['autodocs']`
+     - `argTypes`: Define controls for the `status` input, allowing users to select `new`, `in_progress`, or `resolved`.
+   - Create individual stories (e.g., `New`, `InProgress`, `Resolved`) demonstrating each status level.
+
+Provide the full TypeScript code for both new Storybook story files.
+
+"""
+
+[commands."frontend:make-styles-and-presentational-components"]
+prompt = """
+As an Angular developer, your task is to establish a basic theme file and create two simple, reusable presentational components: `PriorityBadge` and `StatusLabel`.
+
+**Context Files:**
+{{file "frontend/src/styles.scss"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Create Theme File (`frontend/src/styles/_theme.scss`):**
+   - Create a new SCSS partial to hold theme variables.
+   - Content should include variables for primary, accent, warn, success, info, text, and background colors.
+
+**2. Modify Global Styles (`frontend/src/styles.scss`):**
+   - Add an `@import` statement at the top of the file to include the new `_theme.scss`.
+
+**3. Create `PriorityBadgeComponent` in `frontend/src/app/components/priority-badge/`:**
+   - **`priority-badge.component.ts`:**
+     - Create a component that takes one `@Input()`: `priority: TicketPriority`.
+   - **`priority-badge.component.html`:**
+     - A `<span>` that displays the priority value.
+     - Use `[ngClass]` to apply a dynamic class based on the priority (e.g., `'priority-low'`, `'priority-medium'`).
+   - **`priority-badge.component.scss`:**
+     - Define styles for a base `.badge` class (padding, border-radius).
+     - Define modifier classes `.priority-low`, `.priority-medium`, `.priority-high` with distinct background colors using variables from `_theme.scss`.
+
+**4. Create `StatusLabelComponent` in `frontend/src/app/components/status-label/`:**
+   - **`status-label.component.ts`:**
+     - Create a component that takes one `@Input()`: `status: TicketStatus`.
+   - **`status-label.component.html`:**
+     - A `<span>` that displays the status value.
+     - Use `[ngClass]` to apply a dynamic class based on the status (e.g., `'status-new'`, `'status-in_progress'`).
+   - **`status-label.component.scss`:**
+     - Define styles for a base `.label` class.
+     - Define modifier classes `.status-new`, `.status-in_progress`, `.status-resolved` with distinct text or background colors.
+
+Provide the full code for all new and modified files.
+
+"""
+
+[commands."frontend:make-tests-ui-guards"]
+prompt = """
+As an Angular developer, your task is to create a suite of unit tests for UI services, guards, a key component, and an interceptor to ensure their correctness and reliability.
+
+**Context Files:**
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.ts"}}
+{{file "frontend/src/app/guards/auth.guard.ts"}}
+{{file "frontend/src/app/guards/role.guard.ts"}}
+{{file "frontend/src/app/interceptors/loader.interceptor.ts"}}
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/models/ticket.model.ts"}}
+
+**Instructions:**
+
+Create the following `.spec.ts` files with the specified tests. Use `TestBed` for configuration and provide mocks for all dependencies.
+
+**1. `frontend/src/app/services/ui.service.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `MatSnackBarModule`. Create a mock for `MatSnackBar`.
+   - **`showLoader() should emit true from loading$`**: Call `showLoader()` and assert that `loading$` emits `true`.
+   - **`hideLoader() should emit false from loading$`**: Call `showLoader()` then `hideLoader()` and assert that `loading$` emits `false`.
+   - **`showSnackbar() should call MatSnackBar.open`**: Call `showSnackbar()` and assert that the `snackBar.open` mock was called with the correct arguments.
+
+**2. `frontend/src/app/components/ticket-card/ticket-card.component.spec.ts`:**
+   - **Setup:** Configure `TestBed` and declare required child components like `PriorityBadgeComponent` and `StatusLabelComponent`.
+   - **`should emit viewDetails with ticket id on viewDetails click`**:
+     - Set the component's `ticket` input.
+     - Spy on the `viewDetails` event emitter.
+     - Trigger a click on the "View Details" button.
+     - Assert that `viewDetails.emit` was called with the correct ticket ID.
+   - **`should truncate long descriptions`**:
+     - Provide a ticket with a description longer than the truncation limit.
+     - Trigger change detection.
+     - Assert that the `truncatedDescription` getter returns a string that is shorter than the original and ends with '...'.
+
+**3. `frontend/src/app/guards/auth.guard.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `AuthService` and `Router`.
+   - **`should allow activation when user is logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return a valid role.
+     - Execute the guard and assert the result is `true`.
+   - **`should deny activation and redirect to /login when user is not logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return `null`.
+     - Mock `router.parseUrl()` to return a `UrlTree`.
+     - Execute the guard and assert that `router.parseUrl` was called with `/login`.
+
+**4. `frontend/src/app/guards/role.guard.spec.ts`:**
+   - **Setup:** `TestBed`. Mock for `AuthService`.
+   - **`should allow activation when user role is in the allowed list`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Admin`.
+     - Create a mock `ActivatedRouteSnapshot` with `data: { roles: [UserRole.Admin, UserRole.Agent] }`.
+     - Execute the guard and assert the result is `true`.
+   - **`should deny activation when user role is not in the allowed list`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Reporter`.
+     - Create a mock `ActivatedRouteSnapshot` with `data: { roles: [UserRole.Admin, UserRole.Agent] }`.
+     - Execute the guard and assert the result is `false`.
+
+**5. `frontend/src/app/interceptors/loader.interceptor.spec.ts`:**
+   - **Setup:** `TestBed` with `HttpClientTestingModule`. Mocks for `UiService`.
+   - **`should show and hide loader for a successful request`**:
+     - Make a test HTTP call.
+     - Assert that `uiService.showLoader` was called.
+     - Flush the mock request.
+     - Assert that `uiService.hideLoader` was called.
+   - **`should show snackbar and hide loader on error`**:
+     - Make a test HTTP call that returns an error.
+     - Assert that `uiService.showLoader` was called.
+     - Assert that `uiService.showSnackbar` was called with an error message.
+     - Assert that `uiService.hideLoader` was called.
+
+Provide the full TypeScript code for all five new `.spec.ts` files.
+
+"""
+
+[commands."frontend:make-tests-unit"]
+prompt = """
+As an Angular developer, your task is to create unit tests for key services, guards, and components in the application.
+
+**Context Files:**
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/services/ui.service.ts"}}
+{{file "frontend/src/app/guards/auth.guard.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+Create the following `.spec.ts` files with the specified tests. Use `TestBed` for configuration and provide mocks for all dependencies.
+
+**1. `frontend/src/app/services/auth.service.spec.ts`:**
+   - **Setup:** Configure `TestBed`. Mock `localStorage`.
+   - **`should be created`**: Basic instantiation test.
+   - **`login() should set role and save to localStorage`**:
+     - Call `login()` with a role.
+     - Assert that `currentUserRole$` emits the correct role.
+     - Assert that `localStorage.setItem` was called with the correct key and value.
+   - **`logout() should clear role and remove from localStorage`**:
+     - Call `logout()`.
+     - Assert that `currentUserRole$` emits `null`.
+     - Assert that `localStorage.removeItem` was called.
+   - **`should load initial role from localStorage`**:
+     - Set a role in the mock `localStorage` before service creation.
+     - Create the service.
+     - Assert that `getSnapshotUserRole()` returns the correct role.
+
+**2. `frontend/src/app/services/ui.service.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `MatSnackBarModule`. Create a mock for `MatSnackBar`.
+   - **`showLoader() should emit true from loading$`**: Call `showLoader()` and assert that `loading$` emits `true`.
+   - **`hideLoader() should emit false from loading$`**: Call `showLoader()` then `hideLoader()` and assert that `loading$` emits `false`.
+   - **`showSnackbar() should call MatSnackBar.open`**: Call `showSnackbar()` and assert that the `snackBar.open` mock was called with the correct arguments.
+
+**3. `frontend/src/app/guards/auth.guard.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `AuthService` and `Router`.
+   - **`should allow activation when user is logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return a valid role.
+     - Execute the guard.
+     - Assert the result is `true`.
+   - **`should deny activation and redirect to /login when user is not logged in`**:
+     - Mock `authService.getSnapshotUserRole()` to return `null`.
+     - Mock `router.parseUrl()` to return a `UrlTree`.
+     - Execute the guard.
+     - Assert that `router.parseUrl` was called with `/login`.
+     - Assert the result is the mocked `UrlTree`.
+
+**4. `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`:**
+   - **Setup:** Configure `TestBed` with `RouterTestingModule`. Create mocks for `TicketService`, `AuthService`, and `Router`.
+   - **`should set reporter columns for reporter role`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Reporter`.
+     - Create the component.
+     - Assert that `component.displayedColumns` matches the expected columns for a reporter.
+   - **`should set admin columns for admin role`**:
+     - Mock `authService.getSnapshotUserRole()` to return `UserRole.Admin`.
+     - Create the component.
+     - Assert that `component.displayedColumns` includes the actions column.
+   - **`should call getTickets on init`**:
+     - Mock `ticketService.getTickets()` to return an observable.
+     - Create the component.
+     - Assert that `ticketService.getTickets` was called.
+
+Provide the full TypeScript code for all four new `.spec.ts` files.
+
+"""
+
+[commands."frontend:make-theme-documentation-story"]
+prompt = """
+As an Angular developer using Storybook, your task is to create a documentation-only story using MDX to showcase the project's design system, specifically its color palette and typography.
+
+**Context File (for reference):**
+{{file "frontend/src/styles/_theme.scss"}}
+
+**Instructions:**
+
+Create a new file named `frontend/src/stories/Theme.mdx`. This file should contain the following:
+
+1.  **Meta Block:**
+    - Import `Meta`, `ColorPalette`, and `ColorItem` from `@storybook/blocks`.
+    - Define the story's metadata: `<Meta title="Design System/Theme" />`
+
+2.  **Title:**
+    - Add a main title: `# Theme Documentation`
+
+3.  **Color Palette Section:**
+    - Add a subtitle: `## Color Palette`
+    - Use the `ColorPalette` and `ColorItem` blocks to display the colors defined in `_theme.scss`.
+    - Create a `ColorItem` for each of the following:
+      - Title: `Primary`, Subtitle: `$primary-color`, Colors: `{ Primary: '#3f51b5' }`
+      - Title: `Accent`, Subtitle: `$accent-color`, Colors: `{ Accent: '#ff4081' }`
+      - Title: `Warn`, Subtitle: `$warn-color`, Colors: `{ Warn: '#f44336' }`
+      - Title: `Success`, Subtitle: `$success-color`, Colors: `{ Success: '#4caf50' }`
+      - Title: `Info`, Subtitle: `$info-color`, Colors: `{ Info: '#2196f3' }`
+      - Title: `Text`, Subtitle: `$text-color`, Colors: `{ Text: '#212121' }`
+      - Title: `Background`, Subtitle: `$background-color`, Colors: `{ Background: '#f5f5f5' }`
+
+4.  **Typography Section:**
+    - Add a subtitle: `## Typography`
+    - Provide examples of standard HTML typography elements to demonstrate the default global styles.
+    - Include the following examples:
+      ```html
+      <h1>Heading 1</h1>
+      <h2>Heading 2_</h2>
+      <h3>Heading 3</h3>
+      <p>This is a paragraph of text. It is used for long-form content. <strong>This text is bold.</strong> <em>This text is italic.</em></p>
+      <a>This is a link.</a>
+      ```
+
+Provide the full content for the new `frontend/src/stories/Theme.mdx` file.
+
+"""
+
+[commands."frontend:make-ticket-card-component-and-story"]
+prompt = """
+As an Angular developer, your task is to create a `TicketCardComponent` and its corresponding Storybook stories. This component will display a summary of a ticket and allow navigation to its details.
+
+**Context Files:**
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+
+**Instructions:**
+
+**1. Create `TicketCardComponent` in `frontend/src/app/components/ticket-card/`:**
+   - **`ticket-card.component.ts`:**
+     - Create a component with `@Input()` properties:
+       - `ticket: Ticket`
+       - `userRole: UserRole`
+     - Create an `@Output()` property:
+       - `viewDetails = new EventEmitter<number>()`
+     - Implement a method `onViewDetails()` that emits `this.ticket.id` through `viewDetails`.
+   - **`ticket-card.component.html`:**
+     - Use an Angular Material `mat-card` to display the ticket information.
+     - Display `ticket.title` as `mat-card-title`.
+     - Display a truncated `ticket.description` (e.g., first 100 characters with '...').
+     - Use `app-priority-badge` for `ticket.priority`.
+     - Use `app-status-label` for `ticket.status`.
+     - Display `creator_id` and `created_at`.
+     - Conditionally display `assignee_id` only if `userRole` is `UserRole.Agent` or `UserRole.Admin`.
+     - Add a `mat-raised-button` with text "View Details" that calls `onViewDetails()`.
+   - **`ticket-card.component.scss`:**
+     - Add basic styling for the card, spacing, and truncation.
+
+**2. Create Story for `TicketCardComponent` (`frontend/src/app/components/ticket-card/ticket-card.component.stories.ts`):**
+   - Import `Meta`, `StoryObj` from `@storybook/angular`.
+   - Import `TicketCardComponent`, `Ticket`, `TicketPriority`, `TicketStatus`, `UserRole`.
+   - Define the `meta` object:
+     - `component: TicketCardComponent`
+     - `title: 'Components/TicketCard'`
+     - `tags: ['autodocs']`
+     - `decorators`: Add `moduleMetadata` to declare `PriorityBadgeComponent`, `StatusLabelComponent` and import `MatCardModule`, `MatButtonModule`, `MatIconModule`.
+     - `argTypes`: Define controls for `ticket` properties (e.g., `title`, `description`, `priority`, `status`, `assignee_id`, `creator_id`, `created_at`) and `userRole`.
+   - Create individual stories demonstrating different scenarios:
+     - `Default`: A basic ticket for a reporter.
+     - `AssignedTicketForAgent`: A ticket with an assignee, viewed by an agent.
+     - `HighPriorityInProgress`: A ticket with high priority and in-progress status.
+     - `LongDescription`: A ticket with a very long description to test truncation.
+
+Provide the full TypeScript/HTML/SCSS code for the new component files and the Storybook story file.
+
+"""
+
+[commands."frontend:make-ticket-details-component"]
+prompt = """
+As an Angular developer, your task is to create a `TicketDetailsComponent` that displays the details of a single ticket, including external user information and functionality for triage suggestions.
+
+**Context Files:**
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+
+**Instructions:**
+
+**1. Create `TicketDetailsComponent` in `frontend/src/app/components/ticket-details/`:**
+   - **`ticket-details.component.ts`:**
+     - Inject `ActivatedRoute`, `TicketService`, `AuthService`, and `Router`.
+     - Define public properties:
+       - `ticket$: Observable<Ticket | undefined>`
+       - `externalUserInfo$: Observable<{ name: string } | undefined>`
+       - `currentUserRole$: Observable<UserRole | null>`
+       - `triageSuggestion: { suggested_status: TicketStatus, suggested_priority: TicketPriority, suggested_tags: string[] } | null = null;`
+     - In `ngOnInit`:
+       - Get the `id` from the route parameters.
+       - Fetch the `ticket$` using `this.ticketService.getTicket(id)`.
+       - Fetch `externalUserInfo$` using `this.ticketService.getExternalUserInfo()`.
+       - Subscribe to `this.authService.currentUserRole$` to get the current user's role.
+     - Implement `loadTriageSuggestion(ticketId: number)`: Calls `ticketService.getTriageSuggestion(ticketId)` and stores the result in `triageSuggestion`.
+     - Implement `acceptTriageSuggestion(ticketId: number)`: If `triageSuggestion` is not null, call `ticketService.updateTicket(ticketId, { status: this.triageSuggestion.suggested_status, priority: this.triageSuggestion.suggested_priority, tags: this.triageSuggestion.suggested_tags })`. After update, reset `triageSuggestion` to null and refresh ticket details.
+     - Implement `rejectTriageSuggestion()`: Resets `triageSuggestion` to null.
+     - Implement `goBack()`: Navigates back to the ticket list.
+
+   - **`ticket-details.component.html`:**
+     - Use `mat-card` for the main ticket details.
+     - Display `ticket.title`, `ticket.description`, `ticket.created_at`.
+     - Use `app-priority-badge` and `app-status-label` for priority and status.
+     - Display `assignee_id` and `creator_id`.
+     - Display `tags` (e.g., using `mat-chip-list`).
+     - Display external user info (e.g., "External User: {{ (externalUserInfo$ | async)?.name }}").
+     - **Conditional Triage Section:**
+       - Only show for `UserRole.Agent` or `UserRole.Admin`.
+       - If `triageSuggestion` is null, show a "Suggest Triage" button (e.g., `mat-raised-button`) that calls `loadTriageSuggestion(ticket.id)`.
+       - If `triageSuggestion` is not null, display the suggested status, priority, and tags. Provide "Accept" and "Reject" buttons that call `acceptTriageSuggestion(ticket.id)` and `rejectTriageSuggestion()` respectively.
+     - Add a "Go Back" button (e.g., `mat-button`) that calls `goBack()`.
+
+   - **`ticket-details.component.scss`:**
+     - Add basic styling for layout and spacing.
+
+Provide the full code for all three new files: `ticket-details.component.ts`, `ticket-details.component.html`, and `ticket-details.component.scss`.
+
+"""
+
+[commands."frontend:make-ticket-list-component"]
+prompt = """
+As an Angular developer, your task is to create a `TicketListComponent` that displays a list of tickets using an Angular Material table. The columns displayed should be dynamic based on the user's role.
+
+**Context Files:**
+{{file "frontend/src/app/services/ticket.service.ts"}}
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/ticket.model.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+{{file "frontend/src/app/components/priority-badge/priority-badge.component.ts"}}
+{{file "frontend/src/app/components/status-label/status-label.component.ts"}}
+
+**Instructions:**
+
+**1. Create `TicketListComponent` in `frontend/src/app/components/ticket-list/`:**
+   - **`ticket-list.component.ts`:**
+     - Inject `TicketService`, `AuthService`, and `Router`.
+     - Define a public property `tickets$: Observable<Ticket[]>`.
+     - Define a public property `displayedColumns: string[] = []`.
+     - In `ngOnInit`:
+       - Get the current user's role from `AuthService`.
+       - Based on the role, set the `displayedColumns` array:
+         - For `UserRole.Reporter`: `['id', 'title', 'status', 'priority', 'created_at']`
+         - For `UserRole.Agent` or `UserRole.Admin`: `['id', 'title', 'status', 'priority', 'assignee_id', 'created_at', 'actions']`
+       - Fetch the tickets by calling `this.ticketService.getTickets()` and assign the result to `tickets$`.
+     - Create a method `viewTicket(id: number)` that navigates to `/tickets/{id}`.
+
+   - **`ticket-list.component.html`:**
+     - Use a `mat-table` to display the tickets from the `tickets$` observable.
+     - Define the table columns using `ng-container` for each column name specified in `displayedColumns`.
+     - For the `status` column, use the `app-status-label` component.
+     - For the `priority` column, use the `app-priority-badge` component.
+     - For the `actions` column, add a `mat-icon-button` with a 'visibility' icon that calls `viewTicket(ticket.id)` on click.
+
+   - **`ticket-list.component.scss`:**
+     - Add basic styling to ensure the table takes up the full width.
+
+Provide the full code for all three new files: `ticket-list.component.ts`, `ticket-list.component.html`, and `ticket-list.component.scss`.
+
+"""
+
+[commands."frontend:make-ui-state-components"]
+prompt = """
+As an Angular developer, your task is to implement global UI state management for loading indicators and snackbar notifications. This involves creating a UI service, a loader component, and integrating the loader into the main application template.
+
+**Context Files:**
+{{file "frontend/src/app/app.component.html"}}
+{{file "frontend/src/app/app.module.ts"}} # For context on where to suggest module imports/declarations
+
+**Instructions:**
+
+**1. Create `UiService` (`frontend/src/app/services/ui.service.ts`):**
+   - Create an injectable service (`@Injectable({ providedIn: 'root' })`).
+   - Inject `MatSnackBar` from `@angular/material/snack-bar`.
+   - Implement a public `loading$` property as a `BehaviorSubject<boolean>` initialized to `false`.
+   - Implement `showLoader()` method: sets `this.loading$.next(true)`.
+   - Implement `hideLoader()` method: sets `this.loading$.next(false)`.
+   - Implement `showSnackbar(message: string, action: string = 'Zamknij', duration: number = 3000)` method: uses `this.snackBar.open(message, action, { duration })`.
+
+**2. Create `LoaderComponent` (`frontend/src/app/components/loader/loader.component.ts`, `.html`, `.scss`):**
+   - **`loader.component.ts`:**
+     - Create a component (`@Component(...)`).
+     - Inject `UiService`.
+     - Create a public property `isLoading$: Observable<boolean>` initialized with `this.uiService.loading$`.
+   - **`loader.component.html`:**
+     - Use `*ngIf="isLoading$ | async"` to conditionally display the loader.
+     - Inside the `*ngIf` block, display a `mat-spinner`.
+     - Wrap the `mat-spinner` in a `div` that acts as a full-screen overlay.
+   - **`loader.component.scss`:**
+     - Style the overlay `div` to be `position: fixed`, `top: 0`, `left: 0`, `width: 100%`, `height: 100%`.
+     - Use `display: flex`, `justify-content: center`, `align-items: center` to center the spinner.
+     - Add a semi-transparent background (e.g., `background-color: rgba(0, 0, 0, 0.3)`).
+     - Set a high `z-index` (e.g., `z-index: 9999`).
+
+**3. Modify `app.component.html` (`frontend/src/app/app.component.html`):**
+   - Add the `<app-loader></app-loader>` tag at the very end of the component's template, just before the closing main tag (e.g., `</main>` or `</div>`). This ensures it overlays all other content.
+
+Provide the full TypeScript/HTML/SCSS code for all new and modified files.
+
+"""
+
+[commands."frontend:refactor-tests-unit-auth-logic"]
+prompt = """
+As an Angular developer, your task is to refactor existing frontend unit tests to improve type safety and correctly handle `AuthService` logic, specifically addressing issues in `TicketDetailsComponent` and `TicketListComponent` tests.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.spec.ts"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.spec.ts"}}
+{{file "frontend/src/app/services/auth.service.ts"}}
+{{file "frontend/src/app/models/enums.ts"}}
+
+**Instructions:**
+
+**1. Refactor `AuthService` Mock in `ticket-details.component.spec.ts`:**
+   - Locate the `AuthService` mock definition within `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`.
+   - Replace the `unknown as AuthService` casting with a properly structured mock object. This mock object should explicitly define the methods and properties of `AuthService` that are used by `TicketDetailsComponent` (e.g., `getSnapshotUserRole`, `currentUserRole$`).
+   - Ensure the mock provides realistic return values for these methods (e.g., a `BehaviorSubject` for `currentUserRole$`).
+
+**2. Add Test for `userRole` Fallback in `ticket-list.component.spec.ts`:**
+   - In `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`, add a new test method, for example, `should set userRole to Reporter when authService returns null`.
+   - Inside this test:
+     - Configure the `AuthService` mock so that `getSnapshotUserRole()` returns `null`.
+     - Create an instance of `TicketListComponent`.
+     - Assert that `component.userRole` is equal to `UserRole.Reporter`, verifying the fallback mechanism.
+
+Provide the full TypeScript code for both modified files:
+1. `frontend/src/app/components/ticket-details/ticket-details.component.spec.ts`
+2. `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`
+
+"""
