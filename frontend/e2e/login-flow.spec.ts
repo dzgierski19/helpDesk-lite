@@ -27,5 +27,5 @@ test('should allow a user to log in, view the ticket list, and see ticket detail
   }
 
   await expect(page).toHaveURL(/\/tickets\/\d+$/);
-  await expect(page.locator('app-ticket-card mat-card-title')).toBeVisible();
+  await expect(page.locator('.ticket-hero .hero-title')).toBeVisible();
 });

@@ -7,6 +7,7 @@ import { SharedModule } from './shared/shared.module';
 import { UiService } from './services/ui.service';
 import { AuthService } from './services/auth.service';
 import { AuthUser } from './models/auth-user.model';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -26,7 +27,7 @@ describe('AppComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
-      imports: [RouterTestingModule, SharedModule, NoopAnimationsModule],
+      imports: [RouterTestingModule, SharedModule, MatIconModule, NoopAnimationsModule],
       providers: [
         { provide: UiService, useValue: uiServiceStub },
         { provide: AuthService, useValue: authServiceStub },

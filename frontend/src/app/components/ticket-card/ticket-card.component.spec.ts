@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 import { TicketCardComponent } from './ticket-card.component';
 import { Ticket } from '../../models/ticket.model';
@@ -37,7 +38,7 @@ describe('TicketCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatCardModule, MatButtonModule],
+      imports: [MatCardModule, MatButtonModule, MatIconModule],
       declarations: [TicketCardComponent, PriorityBadgeComponentStub, StatusLabelComponentStub],
     }).compileComponents();
 
