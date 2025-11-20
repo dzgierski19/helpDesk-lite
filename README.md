@@ -86,6 +86,8 @@ The Angular app uses the same prompt-driven workflow and Storybook design system
 ```bash
 cd frontend
 npm install
+# optional: API_PROXY_TARGET overrides the dev proxy (defaults to http://127.0.0.1:8000)
+# API_PROXY_TARGET=http://backend:8000 npm start
 npm start
 ```
 
@@ -128,6 +130,7 @@ docker compose up --build backend frontend
 
 - Backend runs at `http://localhost:8000` (the container executes `composer install`, copies `.env.example` if missing, runs migrations/seeds, then `php artisan serve`).
 - Frontend runs at `http://localhost:4200` via `npm start --host 0.0.0.0 --port 4200`.
+- Frontend proxy target is controlled via `API_PROXY_TARGET`; Docker Compose sets it to `http://backend:8000` so the Angular container talks to the backend service. For local CLI runs it falls back to `http://127.0.0.1:8000`.
 - Storybook can be started with `docker compose up storybook` (served on `http://localhost:6006`).
 
 Use `docker compose exec backend php artisan migrate --seed` if you change migrations while the containers are running. Stop everything with `Ctrl+C` or `docker compose down`.
@@ -165,6 +168,20 @@ curl -i -X DELETE http://127.0.0.1:8000/api/tickets/1 \
 
 Validation errors return HTTP 422 with JSON bodies (e.g., `{"message":"The title field is required.","errors":{"title":["..."]}}`).
 
+### Default credentials
+Seeder creates three demo accounts:
+
+| Role     | Email                | Password |
+|----------|---------------------|----------|
+| Admin    | `admin@example.com` | `password` |
+| Agent    | `agent@example.com` | `password` |
+| Reporter | `reporter@example.com` | `password` |
+
+Only these `@example.com` accounts exist—make sure you enter them exactly as above when signing in (older docs referencing `helpdesk.test` are obsolete). Password hashes live in `database/seeders/DatabaseSeeder.php`.
+
+### External API integration
+`GET /api/external/user-info` proxies [JsonPlaceholder](https://jsonplaceholder.typicode.com/users/1). Responses are cached for 10 minutes, and failures return `{"error":"external_api_failed"}` (HTTP 502) so the frontend can display a fallback (“N/A” + snackbar).
+
 ## LLM Workflow
 Prompt-Driven Development (PDD) keeps code generation deterministic:
 
@@ -196,11 +213,7 @@ cd frontend && npm run build-storybook
 ```
 
 ## 🔐 Roles and login
-Login is "fake" — role selection from a dropdown:
-
-- `admin`
-- `agent`
-- `reporter`
+Authentication now uses Sanctum personal-access tokens (no dropdown). Use the seeded accounts above to obtain a token via `/api/login`; the SPA stores it and attaches `Authorization: Bearer …` to every request.
 
 The role goes into:
 - `localStorage.userRole`
