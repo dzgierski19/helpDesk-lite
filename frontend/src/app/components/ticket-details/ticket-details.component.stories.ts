@@ -123,12 +123,35 @@ const sampleTicket: Ticket = {
   description:
     'Enterprise customers report intermittent 500 responses when uploading CSV attachments larger than 5MB. The logs show timeout errors.',
   priority: TicketPriority.High,
-  status: TicketStatus.New,
+  status: TicketStatus.InProgress,
   assignee_id: 9,
   creator_id: 27,
   tags: ['api', 'uploads', 'regression'],
   created_at: '2024-05-08T09:30:00.000Z',
   updated_at: '2024-05-09T14:10:00.000Z',
+  status_changes: [
+    {
+      id: 1,
+      ticket_id: 501,
+      old_status: TicketStatus.New,
+      new_status: TicketStatus.InProgress,
+      changed_at: '2024-05-08T11:15:00.000Z',
+    },
+    {
+      id: 2,
+      ticket_id: 501,
+      old_status: TicketStatus.InProgress,
+      new_status: TicketStatus.Resolved,
+      changed_at: '2024-05-09T08:45:00.000Z',
+    },
+    {
+      id: 3,
+      ticket_id: 501,
+      old_status: TicketStatus.Resolved,
+      new_status: TicketStatus.InProgress,
+      changed_at: '2024-05-09T13:50:00.000Z',
+    },
+  ],
 };
 
 const sampleSuggestion = {
@@ -145,37 +168,73 @@ const meta: Meta<TicketDetailsComponent> = {
   },
   render: () => ({
     template: `
-      <div class="sb-aurora-shell">
-        <header class="sb-aurora-shell__header">
-          <div class="sb-aurora-shell__brand">
-            <p class="sb-aurora-shell__eyebrow">Helpdesk Lite</p>
-            <h1>Customer ticketing workspace</h1>
-            <p class="sb-aurora-shell__subtitle">
-              Manage authentication issues, requests, and AI-powered triage suggestions in one place.
-            </p>
+      <div class="app-shell">
+        <header class="app-header">
+          <div class="header-ambient">
+            <span class="ambient-orb ambient-orb--one"></span>
+            <span class="ambient-orb ambient-orb--two"></span>
+            <span class="ambient-orb ambient-orb--three"></span>
           </div>
-          <div class="sb-aurora-shell__user">
-            <span class="sb-aurora-shell__user-name">Story User</span>
-            <span class="sb-aurora-shell__role">Agent</span>
+          <div class="brand-line">
+            <div class="brand">
+              <div class="brand-logo">
+                <span>HL</span>
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="storybook-glow" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.9" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="60" cy="60" r="58" stroke="url(#storybook-glow)" stroke-width="4" fill="none" />
+                </svg>
+              </div>
+              <div class="brand-copy">
+                <p class="eyebrow">Helpdesk Lite</p>
+                <h1>Customer ticketing workspace</h1>
+                <p class="subtitle">Manage authentication issues, requests, and AI-powered triage suggestions in one place.</p>
+              </div>
+            </div>
+          </div>
+          <nav class="app-actions">
+            <div class="user-summary">
+              <div class="user-name">Story User</div>
+              <div class="user-role">Agent</div>
+            </div>
+            <button class="new-ticket-button" type="button">Create Ticket</button>
+            <button class="logout-button" type="button">Logout</button>
+          </nav>
+          <div class="hero-metrics">
+            <div class="header-pills">
+              <span class="pill pill--online">
+                <span class="dot"></span>
+                Backend live
+              </span>
+              <span class="pill pill--storybook">
+                <mat-icon aria-hidden="true">auto_graph</mat-icon>
+                Storybook synced
+              </span>
+              <span class="pill pill--llm">LLM-assisted delivery</span>
+            </div>
           </div>
         </header>
-        <div class="sb-aurora-shell__content">
-          <section class="sb-aurora-shell__summary">
-            <div>
-              <p class="summary-label">Live tickets</p>
+        <main class="app-content">
+          <section class="summary-bar">
+            <div class="summary-item">
+              <span class="summary-label">Live tickets</span>
               <strong>10</strong>
             </div>
-            <div>
-              <p class="summary-label">Awaiting triage</p>
+            <div class="summary-item">
+              <span class="summary-label">Awaiting triage</span>
               <strong>4</strong>
             </div>
-            <div>
-              <p class="summary-label">Avg response</p>
+            <div class="summary-item">
+              <span class="summary-label">Avg response</span>
               <strong>12h</strong>
             </div>
           </section>
           <app-ticket-details></app-ticket-details>
-        </div>
+        </main>
       </div>
     `,
   }),

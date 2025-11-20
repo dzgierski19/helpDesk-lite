@@ -4,11 +4,26 @@ const auroraStyles = `
 
 :root {
   font-family: 'Space Grotesk', 'Inter', Roboto, sans-serif;
-  --sb-aurora-bg: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.25), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.25), transparent 35%),
-    radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.2), transparent 45%),
-    #050b16;
-  --sb-aurora-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(15, 23, 42, 0.35));
+  --color-primary: #6366f1;
+  --color-accent: #ec4899;
+  --color-warn: #f44336;
+  --color-success: #22c55e;
+  --color-info: #0ea5e9;
+  --color-text: #0f172a;
+  --color-background: #f8fafc;
+  --brand-blue: #38bdf8;
+  --brand-purple: #a855f7;
+  --brand-cyan: #5eead4;
+  --gradient-brand: linear-gradient(120deg, var(--brand-blue), var(--brand-purple));
+  --gradient-aurora: radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(168, 85, 247, 0.2), transparent 40%),
+    radial-gradient(circle at 5% 85%, rgba(94, 234, 212, 0.18), transparent 50%),
+    #0f172a;
+  --surface-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
+  --radius-card: 1.25rem;
+  --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.16);
+  --sb-aurora-bg: var(--gradient-aurora);
+  --sb-aurora-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(15, 23, 42, 0.35));
   --sb-aurora-border: rgba(255, 255, 255, 0.18);
   --sb-aurora-text: #f8fafc;
 }
@@ -16,6 +31,8 @@ const auroraStyles = `
 body.sb-show-main {
   background: var(--sb-aurora-bg);
   color: var(--sb-aurora-text);
+  font-family: inherit;
+  min-height: 100vh;
 }
 
 #storybook-root,
@@ -80,118 +97,20 @@ body.sb-show-main {
   color: rgba(241, 245, 249, 0.95) !important;
 }
 
-.sb-aurora-shell {
-  min-height: 100vh;
-  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.15), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.15), transparent 35%),
-    #050b16;
-  padding: 3rem 1.5rem;
-  color: var(--sb-aurora-text);
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.sb-aurora-shell__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2));
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 70px rgba(5, 11, 22, 0.5);
-}
-
-.sb-aurora-shell__brand h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sb-aurora-shell__eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  margin: 0;
-  opacity: 0.75;
-  font-size: 0.8rem;
-}
-
-.sb-aurora-shell__subtitle {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-  opacity: 0.8;
-  max-width: 520px;
-}
-
-.sb-aurora-shell__user {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  text-align: right;
-  align-items: flex-end;
-}
-
-.sb-aurora-shell__user-name {
-  font-weight: 600;
-}
-
-.sb-aurora-shell__role {
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.sb-aurora-shell__content {
-  padding: 2rem;
-  border-radius: 32px;
-  background: rgba(5, 11, 22, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 35px 80px rgba(5, 11, 22, 0.6);
-  max-width: 1150px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.sb-aurora-shell__summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.15));
-}
-
-.sb-aurora-shell__summary .summary-label {
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.7rem;
-  margin: 0;
-  opacity: 0.75;
-}
-
-.sb-aurora-shell__summary strong {
-  display: block;
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
 .sbdocs .sbdocs-toc__link {
   color: #22c55e;
 }
 
 .sbdocs .sbdocs-toc__link.sbdocs-toc__link--active {
   color: #c084fc;
+}
+
+/* Storybook sidebar tweaks */
+aside[data-testid='sidebar'] .sidebar-subheading,
+aside[data-testid='sidebar'] .sidebar-subheading span,
+aside[data-testid='sidebar'] .sidebar-subheading svg {
+  color: #fff !important;
+  opacity: 0.9;
 }
 `;
 

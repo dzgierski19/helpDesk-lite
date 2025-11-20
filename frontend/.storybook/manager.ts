@@ -1,5 +1,6 @@
 import { addons } from '@storybook/manager-api';
 import { create } from '@storybook/theming';
+import './storybook-theme.styles';
 
 const auroraTheme = create({
   base: 'dark',
