@@ -9,6 +9,9 @@
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.85));
+  box-shadow: var(--shadow-card);
 }
 
 mat-card-header {
@@ -55,6 +58,19 @@ mat-card-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.gradient-pill {
+  border-radius: 999px;
+  background: linear-gradient(120deg, #38bdf8, #a855f7);
+  color: #fff;
+  text-transform: none;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 18px 32px rgba(56, 189, 248, 0.25);
 }
 
 @media (max-width: map-get($breakpoints, mobile)) {

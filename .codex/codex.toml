@@ -1687,3 +1687,59 @@ Provide the full TypeScript code for both modified files:
 2. `frontend/src/app/components/ticket-list/ticket-list.component.spec.ts`
 
 """
+
+[commands."frontend:refresh-ticket-details-and-filters"]
+prompt = """
+As a senior frontend developer specializing in modern UI/UX and CSS, your task is to refactor the UI of the ticket list and details pages to implement the new "aurora" theme. This involves updating layouts, component styles, and responsiveness, focusing on CSS and markup changes while preserving existing Angular logic.
+
+**Context Files:**
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.html"}}
+{{file "frontend/src/app/components/ticket-list/ticket-list.component.scss"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.html"}}
+{{file "frontend/src/app/components/ticket-details/ticket-details.component.scss"}}
+{{file "frontend/src/app/components/status-history/status-history.component.html"}}
+{{file "frontend/src/app/components/status-history/status-history.component.scss"}}
+{{file "frontend/src/app/components/triage-suggestion/triage-suggestion.component.html"}}
+{{file "frontend/src/app/components/triage-suggestion/triage-suggestion.component.scss"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.html"}}
+{{file "frontend/src/app/components/ticket-card/ticket-card.component.scss"}}
+
+**Instructions:**
+
+**1. Align Ticket List Filter Row:**
+   - In `ticket-list.component.scss`, ensure the filter row container uses flexbox.
+   - On desktop (≥1280px), all filter controls (Status, Priority, Tag) and the "Filter" button must be on a single, aligned line without wrapping.
+   - On smaller screens, the controls should wrap or stack naturally.
+
+**2. Modernize Ticket Details Layout:**
+   - In `ticket-details.component.html` and `.scss`, create a "hero bar" at the top to display the ticket ID and priority/status chips, using consistent spacing and corner radius from the theme.
+   - The main content area should be refactored to contain the following styled sections.
+
+**3. Style the "Full Description" Section:**
+   - Within `ticket-details.component.html`, wrap the ticket description in a container.
+   - Style this container as a "glass/gradient card" with appropriate padding, a background gradient, and a subtle border.
+   - Add a decorative icon (e.g., a `mat-icon` for 'description') and a placeholder for a "Copy" button.
+
+**4. Style the `StatusHistoryComponent` as a Timeline:**
+   - In `status-history.component.html` and `.scss`, refactor the layout to be a vertical timeline.
+   - Each entry should have an icon, a timestamp, and the status change details.
+   - Create a "gradient spine" (a vertical line with a gradient) that connects the timeline items.
+   - Ensure the timeline is responsive and readable on mobile devices.
+
+**5. Style the `TriageSuggestionComponent` as an "AI Card":**
+   - In `triage-suggestion.component.html` and `.scss`, style the main container with a gradient background and a "glassmorphism" effect.
+   - Add a "sparkles" icon (e.g., `mat-icon` for 'auto_awesome') to the card's header.
+   - Style the suggested keywords as `mat-chip` elements.
+   - The "Accept" and "Refresh" buttons should adopt the new theme's gradient pill style.
+
+**6. Update "View Details" Buttons:**
+   - In `ticket-list.component.html` (for the table's "Actions" column) and `ticket-card.component.html`, style the "View Details" buttons.
+   - They should use the new "gradient pill" style, which includes an icon and a text label, with a gradient background and rounded corners.
+
+**Important:**
+- Only modify HTML markup and SCSS styles. Do not change TypeScript logic or data bindings.
+- Ensure the Playwright E2E test can still find and click the "View Details" buttons. The text content of the buttons should be preserved.
+
+Provide the full, updated code for all modified HTML and SCSS files.
+
+"""

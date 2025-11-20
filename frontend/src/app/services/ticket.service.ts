@@ -67,6 +67,7 @@ export class TicketService {
         tags: ticket.tags ?? [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        status_changes: [],
       };
       this.mockTickets.push(newTicket);
       return of(newTicket);

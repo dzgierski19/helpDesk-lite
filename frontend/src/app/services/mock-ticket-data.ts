@@ -13,6 +13,15 @@ export const MOCK_TICKETS: Ticket[] = [
     tags: ['api', 'gateway'],
     created_at: '2024-05-10T08:00:00.000Z',
     updated_at: '2024-05-10T09:00:00.000Z',
+    status_changes: [
+      {
+        id: 1,
+        ticket_id: 1,
+        old_status: TicketStatus.New,
+        new_status: TicketStatus.InProgress,
+        changed_at: '2024-05-10T09:00:00.000Z',
+      },
+    ],
   },
   {
     id: 2,
@@ -25,6 +34,7 @@ export const MOCK_TICKETS: Ticket[] = [
     tags: ['attachments'],
     created_at: '2024-05-11T12:30:00.000Z',
     updated_at: '2024-05-11T12:30:00.000Z',
+    status_changes: [],
   },
   {
     id: 3,
@@ -37,6 +47,15 @@ export const MOCK_TICKETS: Ticket[] = [
     tags: ['dashboard', 'mobile'],
     created_at: '2024-05-09T10:15:00.000Z',
     updated_at: '2024-05-09T11:00:00.000Z',
+    status_changes: [
+      {
+        id: 2,
+        ticket_id: 3,
+        old_status: TicketStatus.InProgress,
+        new_status: TicketStatus.Resolved,
+        changed_at: '2024-05-09T11:00:00.000Z',
+      },
+    ],
   },
 ];
 

@@ -1,28 +1,61 @@
 <ng-container *ngIf="ticketFound; else missingTicket">
   <ng-container *ngIf="ticket$ | async as ticket; else loadingTicket">
     <section class="ticket-details-wrapper">
-      <app-ticket-card
-        class="summary-card"
-        [ticket]="ticket"
-        [userRole]="(currentUserRole$ | async) ?? UserRole.Reporter"
-      ></app-ticket-card>
+      <div class="ticket-hero mat-elevation-z3">
+        <div class="hero-text">
+          <span class="hero-eyebrow">Ticket #{{ ticket.id }}</span>
+          <h1 class="hero-title">{{ ticket.title }}</h1>
+          <p class="hero-meta">
+            Created {{ ticket.created_at | date: 'mediumDate' }}
+            <ng-container *ngIf="ticket.updated_at">
+              · Updated {{ ticket.updated_at | date: 'medium' }}
+            </ng-container>
+          </p>
+        </div>
+        <div class="hero-chips">
+          <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
+          <app-status-label [status]="ticket.status"></app-status-label>
+        </div>
+      </div>
 
       <div class="details-grid">
-        <mat-card class="detail-card">
-          <mat-card-title>Full Description</mat-card-title>
+        <mat-card class="detail-card glass-card description-card">
           <mat-card-content>
-            <p class="ticket-description">
-              {{ ticket.description || 'No description provided.' }}
-            </p>
+            <div class="section-heading">
+              <div class="heading-icon">
+                <mat-icon>description</mat-icon>
+              </div>
+              <div>
+                <p class="section-eyebrow">Full Description</p>
+                <h2>Conversation &amp; context</h2>
+              </div>
+              <button type="button" class="ghost-pill" aria-label="Copy description">
+                <mat-icon>content_copy</mat-icon>
+                Copy
+              </button>
+            </div>
 
-            <div class="ticket-meta">
-              <div><strong>Assignee:</strong> {{ ticket.assignee_id || 'Unassigned' }}</div>
-              <div><strong>Creator:</strong> {{ ticket.creator_id }}</div>
-              <div><strong>External User:</strong> {{ (externalUserInfo$ | async)?.name || 'N/A' }}</div>
+            <div class="ticket-description">
+              {{ ticket.description || 'No description provided.' }}
+            </div>
+
+            <div class="ticket-meta-grid">
+              <div class="meta-card">
+                <span class="meta-label">Assignee</span>
+                <span class="meta-value">{{ ticket.assignee_id || 'Unassigned' }}</span>
+              </div>
+              <div class="meta-card">
+                <span class="meta-label">Creator</span>
+                <span class="meta-value">#{{ ticket.creator_id }}</span>
+              </div>
+              <div class="meta-card">
+                <span class="meta-label">External User</span>
+                <span class="meta-value">{{ (externalUserInfo$ | async)?.name || 'N/A' }}</span>
+              </div>
             </div>
 
             <div class="ticket-tags">
-              <strong>Tags:</strong>
+              <span class="meta-label">Tags</span>
               <mat-chip-set *ngIf="ticket.tags?.length; else noTags">
                 <mat-chip *ngFor="let tag of ticket.tags">{{ tag }}</mat-chip>
               </mat-chip-set>
@@ -31,45 +64,70 @@
           </mat-card-content>
         </mat-card>
 
-        <mat-card class="detail-card">
-          <mat-card-title>Status History</mat-card-title>
+        <mat-card class="detail-card glass-card status-history-card">
           <mat-card-content>
-            <div class="history-row">
-              <span class="history-label">Current Status</span>
-              <app-status-label [status]="ticket.status"></app-status-label>
+            <div class="section-heading">
+              <div class="heading-icon">
+                <mat-icon>timeline</mat-icon>
+              </div>
+              <div>
+                <p class="section-eyebrow">Status History</p>
+                <h2>Journey so far</h2>
+              </div>
             </div>
-            <div class="history-row">
-              <span class="history-label">Priority</span>
-              <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
+
+            <div class="status-timeline" *ngIf="ticket.status_changes?.length; else timelineFallback">
+              <div class="timeline-item" *ngFor="let change of ticket.status_changes; let idx = index">
+                <div class="timeline-icon" [ngClass]="{ accent: idx === 0 }">
+                  <mat-icon>{{ idx === 0 ? 'flag_circle' : 'sync_alt' }}</mat-icon>
+                </div>
+                <div class="timeline-content">
+                  <p class="timeline-title">
+                    {{ change.old_status | titlecase }}
+                    <span class="arrow">→</span>
+                    {{ change.new_status | titlecase }}
+                  </p>
+                  <div class="timeline-value">
+                    <app-status-label [status]="change.new_status"></app-status-label>
+                  </div>
+                  <span class="timeline-timestamp">
+                    {{ change.changed_at | date: 'medium' }}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div class="history-row">
-              <span class="history-label">Created</span>
-              <span>{{ ticket.created_at | date: 'medium' }}</span>
-            </div>
-            <div class="history-row">
-              <span class="history-label">Last Updated</span>
-              <span>{{ ticket.updated_at | date: 'medium' }}</span>
-            </div>
+            <ng-template #timelineFallback>
+              <p class="muted-text">No historical changes recorded for this ticket yet.</p>
+            </ng-template>
           </mat-card-content>
         </mat-card>
 
-        <mat-card class="detail-card triage-card">
-          <mat-card-title>Triage</mat-card-title>
+        <mat-card class="detail-card glass-card triage-card ai-card">
           <mat-card-content>
+            <div class="section-heading ai-heading">
+              <div class="heading-icon sparkle">
+                <mat-icon>auto_awesome</mat-icon>
+              </div>
+              <div>
+                <p class="section-eyebrow">AI Triage</p>
+                <h2>Aurora assistant</h2>
+              </div>
+            </div>
+
             <ng-container *ngIf="(currentUserRole$ | async) as role">
               <ng-container *ngIf="role === UserRole.Agent || role === UserRole.Admin; else triageReadonly">
                 <ng-container *ngIf="triageSuggestion as suggestion; else triageActions">
                   <div class="suggestion-details">
-                    <div>
-                      <strong>Status:</strong>
+                    <div class="suggestion-field">
+                      <span class="meta-label">Status</span>
                       <app-status-label [status]="suggestion.suggested_status"></app-status-label>
                     </div>
-                    <div>
-                      <strong>Priority:</strong>
+                    <div class="suggestion-field">
+                      <span class="meta-label">Priority</span>
                       <app-priority-badge [priority]="suggestion.suggested_priority"></app-priority-badge>
                     </div>
-                    <div class="suggested-tags">
-                      <strong>Tags:</strong>
+                    <div class="suggestion-field">
+                      <span class="meta-label">Suggested tags</span>
                       <mat-chip-set *ngIf="suggestion.suggested_tags.length; else noSuggestedTags">
                         <mat-chip *ngFor="let tag of suggestion.suggested_tags">{{ tag }}</mat-chip>
                       </mat-chip-set>
@@ -77,15 +135,41 @@
                     </div>
                   </div>
                   <div class="triage-actions">
-                    <button mat-raised-button color="primary" (click)="acceptTriageSuggestion(ticket.id)">
+                    <button
+                      mat-raised-button
+                      type="button"
+                      class="gradient-pill"
+                      (click)="acceptTriageSuggestion(ticket.id)"
+                    >
+                      <mat-icon>check_circle</mat-icon>
                       Accept
                     </button>
-                    <button mat-stroked-button color="warn" (click)="rejectTriageSuggestion()">Reject</button>
+                    <button
+                      mat-raised-button
+                      type="button"
+                      class="gradient-pill outline"
+                      (click)="loadTriageSuggestion(ticket.id)"
+                    >
+                      <mat-icon>refresh</mat-icon>
+                      Refresh
+                    </button>
+                    <button mat-button type="button" class="link-button" (click)="rejectTriageSuggestion()">
+                      Dismiss
+                    </button>
                   </div>
                 </ng-container>
                 <ng-template #triageActions>
-                  <button mat-raised-button color="accent" (click)="loadTriageSuggestion(ticket.id)">
-                    Suggest Triage
+                  <p class="muted-text">
+                    Need a fresh recommendation? Let Aurora analyze the ticket details for you.
+                  </p>
+                  <button
+                    mat-raised-button
+                    type="button"
+                    class="gradient-pill"
+                    (click)="loadTriageSuggestion(ticket.id)"
+                  >
+                    <mat-icon>auto_fix_high</mat-icon>
+                    Generate Suggestion
                   </button>
                 </ng-template>
               </ng-container>

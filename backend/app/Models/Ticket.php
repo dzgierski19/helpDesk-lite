@@ -60,6 +60,6 @@ class Ticket extends Model
      */
     public function statusChanges(): HasMany
     {
-        return $this->hasMany(TicketStatusChange::class);
+        return $this->hasMany(TicketStatusChange::class)->orderByDesc('changed_at');
     }
 }
