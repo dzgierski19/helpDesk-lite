@@ -4,7 +4,7 @@ import { create } from '@storybook/theming';
 const auroraTheme = create({
   base: 'dark',
   brandTitle: 'Helpdesk Lite',
-  brandUrl: 'https://github.com/dawid628/HelpdeskLite',
+  brandUrl: 'https://github.com/dzgierski19/helpDesk-lite',
   colorPrimary: '#38bdf8',
   colorSecondary: '#a855f7',
   appBg: '#050b16',

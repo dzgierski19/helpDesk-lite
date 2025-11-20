@@ -1692,3 +1692,40 @@ commands:
 
       Provide the full, updated code for all modified and new files (`app.component.ts`, `app.component.html`, `ticket-list.component.ts`, and the new `ticket-stats.service.ts`).
 
+  frontend:fix-storybook-sidebar-style:
+    prompt: |
+      As a frontend developer specializing in UI and design systems, your task is to fix the styling of the Storybook sidebar. The text and icons in the "STORIES" navigation tree are currently dark, making them unreadable against the application's dark theme.
+
+      **Objective:**
+      Update the Storybook theme styles to make all sidebar text and icons a light color (e.g., #F8FAFC) for all interaction states (default, hover, and active/selected) to ensure they are legible and consistent with the application's design.
+
+      **Context File:**
+      {{file "frontend/.storybook/storybook-theme.styles.ts"}}
+
+      **Instructions:**
+
+      1.  **Modify the Theme Stylesheet:**
+          - Open `frontend/.storybook/storybook-theme.styles.ts`.
+          - Add or modify CSS rules to override the default Storybook sidebar styles.
+          - Target the necessary classes, such as `.sidebar-subheading`, `.sidebar-item`, and their inner `svg` icons.
+          - Set the `color` property to a light value like `#F8FAFC`.
+
+      2.  **Cover All Interaction States:**
+          - Ensure the color change applies to the default state.
+          - Style the `:hover` state to maintain the light color.
+          - Crucially, style the active/selected story, which may use a `[data-selected="true"]` attribute selector or a specific class. The text and icon for the selected item must also be light-colored.
+
+      3.  **Ensure Comprehensive Application:**
+          - The style overrides must work for both top-level story categories (e.g., "TicketList") and their nested stories (e.g., "Default", "Loading").
+
+      **Technical Guidance:**
+      - You may need to target elements within the Storybook root, such as `#storybook-explorer-tree`, to apply these styles effectively.
+      - Avoid using `!important` if possible. However, if Storybook's default styles are too specific or applied inline, `!important` may be a necessary last resort.
+      - For reference, you can consult the official Storybook theming documentation: https://storybook.js.org/docs/configure/theming
+
+      **Verification:**
+      - After applying the changes, run the `npm run build-storybook` command in the `frontend` directory to build a static version of Storybook.
+      - Serve the resulting `storybook-static` directory locally to verify that the sidebar styles are correct in the final build.
+
+      Provide the full, updated code for the `frontend/.storybook/storybook-theme.styles.ts` file.
+
