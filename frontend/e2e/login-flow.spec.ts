@@ -12,15 +12,18 @@ test('should allow a user to log in, view the ticket list, and see ticket detail
 
   await page.waitForURL(/\/tickets$/);
 
-  const mobileCards = page.locator('.mobile-view app-ticket-card');
-  const desktopRows = page.locator('.ticket-table tr[role="row"]');
+  const mobileViewButton = page.getByRole('button', { name: 'View Details' }).first();
+  const desktopViewButton = page.locator('button[aria-label="View ticket"]').first();
 
-  if ((await mobileCards.count()) > 0) {
-    await expect(mobileCards.first()).toBeVisible();
-    await page.getByRole('button', { name: 'View Details' }).first().click();
+  const layout = await Promise.race([
+    desktopViewButton.waitFor({ state: 'visible' }).then(() => 'desktop'),
+    mobileViewButton.waitFor({ state: 'visible' }).then(() => 'mobile'),
+  ]);
+
+  if (layout === 'desktop') {
+    await desktopViewButton.click();
   } else {
-    await expect(desktopRows.nth(1)).toBeVisible();
-    await page.locator('button[aria-label="View ticket"]').first().click();
+    await mobileViewButton.click();
   }
 
   await expect(page).toHaveURL(/\/tickets\/\d+$/);

@@ -130,7 +130,7 @@ docker compose up --build backend frontend
 
 - Backend runs at `http://localhost:8000` (the container executes `composer install`, copies `.env.example` if missing, runs migrations/seeds, then `php artisan serve`).
 - Frontend runs at `http://localhost:4200` via `npm start --host 0.0.0.0 --port 4200`.
-- Frontend proxy target is controlled via `API_PROXY_TARGET`; Docker Compose sets it to `http://backend:8000` so the Angular container talks to the backend service. For local CLI runs it falls back to `http://127.0.0.1:8000`.
+- Frontend proxy target is controlled via `API_PROXY_TARGET`; Docker Compose sets it to `http://backend:8000` so the Angular container talks to the backend service. For local CLI runs it falls back to `http://127.0.0.1:8000`. Because the app uses real Sanctum auth, always ensure the backend is running (and seeded) before `npm start` or `npm run e2e`, otherwise the SPA cannot log in or load tickets.
 - Storybook can be started with `docker compose up storybook` (served on `http://localhost:6006`).
 
 Use `docker compose exec backend php artisan migrate --seed` if you change migrations while the containers are running. Stop everything with `Ctrl+C` or `docker compose down`.
