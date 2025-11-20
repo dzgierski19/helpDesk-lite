@@ -18,7 +18,7 @@ describe('AuthService', () => {
   const mockUser: AuthUser = {
     id: 1,
     name: 'Admin User',
-    email: 'admin@helpdesk.test',
+    email: 'admin@example.com',
     role: UserRole.Admin,
   };
 
@@ -48,7 +48,7 @@ describe('AuthService', () => {
   });
 
   it('should login, persist the token, and load the user profile', () => {
-    service.login({ email: 'admin@helpdesk.test', password: 'password' }).subscribe((user) => {
+    service.login({ email: 'admin@example.com', password: 'password' }).subscribe((user) => {
       expect(user).toEqual(mockUser);
       expect(service.currentUser$.value).toEqual(mockUser);
       expect(service.isAuthenticated$.value).toBeTrue();

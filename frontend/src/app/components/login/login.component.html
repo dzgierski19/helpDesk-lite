@@ -1,12 +1,12 @@
 <div class="login-container">
-  <mat-card class="login-card" [formGroup]="loginForm">
+  <mat-card class="login-card">
     <mat-card-title>Sign in to Helpdesk Lite</mat-card-title>
     <mat-card-content>
       <p class="login-subtitle">
         Access the ticketing workspace with your seeded credentials.
       </p>
 
-      <form (ngSubmit)="onSubmit()" novalidate>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" placeholder="name@example.com" />
@@ -38,9 +38,9 @@
       <section class="credential-hint">
         <p>Demo accounts (password: <strong>password</strong>):</p>
         <ul>
-          <li><strong>Admin:</strong> admin&#64;helpdesk.test</li>
-          <li><strong>Agent:</strong> agent&#64;helpdesk.test</li>
-          <li><strong>Reporter:</strong> reporter&#64;helpdesk.test</li>
+          <li><strong>Admin:</strong> admin&#64;example.com</li>
+          <li><strong>Agent:</strong> agent&#64;example.com</li>
+          <li><strong>Reporter:</strong> reporter&#64;example.com</li>
         </ul>
       </section>
     </mat-card-content>

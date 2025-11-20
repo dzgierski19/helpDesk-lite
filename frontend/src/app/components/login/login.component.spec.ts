@@ -52,7 +52,7 @@ describe('LoginComponent', () => {
   });
 
   it('should call authService.login and navigate on success', () => {
-    const credentials = { email: 'admin@helpdesk.test', password: 'password' };
+    const credentials = { email: 'admin@example.com', password: 'password' };
     authService.login.and.returnValue(of({} as any));
     component.loginForm.setValue(credentials);
 
