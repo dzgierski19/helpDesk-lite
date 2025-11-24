@@ -5,8 +5,8 @@ Helpdesk Lite is a complete two-tier support platform composed of a Laravel back
 
 **Live links**
 - Frontend (Railway): https://helpdesk-frontend-production.up.railway.app/
-- Backend API (Railway): https://helpdesk-backend-production-4ec7.up.railway.app/api
-- Storybook (static): https://dzgierski19.github.io/helpDesk-lite/
+- Backend API (Railway): https://helpdesk-backend-production-4ec7.up.railway.app/
+- Storybook (static): https://helpdesk-lite-storybook.vercel.app/
 
 ## 🏗 Project Structure (monorepo)
 ```
