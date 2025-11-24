@@ -42,7 +42,7 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
-        order: ['Design System', 'Components', 'Containers'],
+        order: ['Containers', 'Components', 'Design System', 'Example', 'Shared', 'Stories'],
       },
     },
     backgrounds: {
