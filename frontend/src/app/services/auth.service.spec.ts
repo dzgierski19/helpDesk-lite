@@ -6,6 +6,7 @@ import {
 import { AuthService } from './auth.service';
 import { UserRole } from '../models/enums';
 import { AuthUser } from '../models/auth-user.model';
+import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -54,11 +55,11 @@ describe('AuthService', () => {
       expect(service.isAuthenticated$.value).toBeTrue();
     });
 
-    const loginReq = httpMock.expectOne('/api/login');
+    const loginReq = httpMock.expectOne(`${environment.apiUrl}/login`);
     loginReq.flush({ token: 'token-123' });
     expect(setItemSpy).toHaveBeenCalledWith(tokenKey, 'token-123');
 
-    const userReq = httpMock.expectOne('/api/user');
+    const userReq = httpMock.expectOne(`${environment.apiUrl}/user`);
     userReq.flush(mockUser);
   });
 
@@ -69,7 +70,7 @@ describe('AuthService', () => {
 
     service.logout().subscribe();
 
-    const logoutReq = httpMock.expectOne('/api/logout');
+    const logoutReq = httpMock.expectOne(`${environment.apiUrl}/logout`);
     logoutReq.flush({});
 
     expect(removeItemSpy).toHaveBeenCalledWith(tokenKey);
@@ -84,7 +85,7 @@ describe('AuthService', () => {
       expect(user).toEqual(mockUser);
     });
 
-    const userReq = httpMock.expectOne('/api/user');
+    const userReq = httpMock.expectOne(`${environment.apiUrl}/user`);
     userReq.flush(mockUser);
 
     expect(service.currentUser$.value).toEqual(mockUser);
@@ -98,7 +99,7 @@ describe('AuthService', () => {
       expect(user).toBeNull();
     });
 
-    const userReq = httpMock.expectOne('/api/user');
+    const userReq = httpMock.expectOne(`${environment.apiUrl}/user`);
     userReq.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
 
     expect(removeItemSpy).toHaveBeenCalledWith(tokenKey);

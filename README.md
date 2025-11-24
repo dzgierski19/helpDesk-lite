@@ -113,6 +113,10 @@ localStorage.useMockData = 'true';
 
 Reset to real API data by removing the key or setting it to `'false'`.
 
+### Hero counters
+- The counters in the top hero (`Live tickets`, `Awaiting triage`, `Avg response`) read from the full ticket dataset fetched after login.
+- Filtering the list only affects the table; the hero always shows totals for **all** tickets (filters are ignored for these stats).
+
 ## Storybook
 Storybook documents the shared UI components that power the Angular frontend.
 

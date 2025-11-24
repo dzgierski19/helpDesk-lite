@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { AuthUser } from '../models/auth-user.model';
 import { UserRole } from '../models/enums';
 
@@ -9,7 +10,7 @@ import { UserRole } from '../models/enums';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = '/api';
+  private readonly apiUrl = environment.apiUrl;
   private readonly tokenStorageKey = 'helpdeskAuthToken';
 
   readonly currentUser$ = new BehaviorSubject<AuthUser | null>(null);

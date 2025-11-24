@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { Ticket } from '../models/ticket.model';
 import { TicketPriority, TicketStatus } from '../models/enums';
 import { MOCK_EXTERNAL_USER, MOCK_TICKETS, MOCK_TRIAGE_SUGGESTION } from './mock-ticket-data';
@@ -9,7 +10,7 @@ import { MOCK_EXTERNAL_USER, MOCK_TICKETS, MOCK_TRIAGE_SUGGESTION } from './mock
   providedIn: 'root'
 })
 export class TicketService {
-  private readonly apiUrl = '/api';
+  private readonly apiUrl = environment.apiUrl;
   private readonly mockTickets = [...MOCK_TICKETS];
 
   constructor(private readonly http: HttpClient) {}

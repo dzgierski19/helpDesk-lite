@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/angular';
 import './storybook-theme.styles';
+import '!style-loader!css-loader!sass-loader!../src/styles.scss';
 
 const customViewports = {
   mobile: {

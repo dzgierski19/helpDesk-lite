@@ -5,6 +5,7 @@ import {
 } from '@angular/common/http/testing';
 import { TicketService } from './ticket.service';
 import { TicketStatus } from '../models/enums';
+import { environment } from '../../environments/environment';
 
 describe('TicketService', () => {
   let service: TicketService;
@@ -28,9 +29,9 @@ describe('TicketService', () => {
   it('getTickets() should build correct params', () => {
     service.getTickets({ status: TicketStatus.New, tag: 'api' }).subscribe();
 
-    const req = httpMock.expectOne((request) => request.url === '/api/tickets');
+    const req = httpMock.expectOne((request) => request.url === `${environment.apiUrl}/tickets`);
 
-    expect(req.request.urlWithParams).toBe('/api/tickets?status=new&tag=api');
+    expect(req.request.urlWithParams).toBe(`${environment.apiUrl}/tickets?status=new&tag=api`);
 
     req.flush([]);
   });
