@@ -12,8 +12,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Copy source
 COPY backend ./
 
-# Install production dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Install dependencies (include dev so Faker is available for seeds)
+RUN composer install --optimize-autoloader
 
 # Ensure writable dirs
 RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
