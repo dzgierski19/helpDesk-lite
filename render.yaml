@@ -69,7 +69,7 @@ services:
       sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
       npm install
       npm run build -- --configuration production
-    publishPath: dist/frontend
+    staticPublishPath: dist/frontend
     envVars:
       - key: BACKEND_URL
         fromService:
