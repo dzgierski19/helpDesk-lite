@@ -3,6 +3,11 @@
 ## Overview
 Helpdesk Lite is a complete two-tier support platform composed of a Laravel backend API, an Angular frontend, and a Storybook-powered design system. Every line of code is produced via Prompt-Driven Development: Gemini prompts define the desired change and OpenAI Codex executes those prompts to generate code. The stack, specification, and LLM logs live in this monorepo so the workflow is transparent and reproducible.
 
+**Live links**
+- Frontend (Railway): https://helpdesk-frontend-production.up.railway.app/
+- Backend API (Railway): https://helpdesk-backend-production-4ec7.up.railway.app/api
+- Storybook (static): https://helpdesk-lite-storybook.vercel.app/
+
 ## 🏗 Project Structure (monorepo)
 ```
 helpdesk-lite/
