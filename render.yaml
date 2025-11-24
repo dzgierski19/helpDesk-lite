@@ -1,9 +1,6 @@
-# render.yaml v3 - Corrected Structure
-# This file configures the deployment of the Helpdesk-Lite application on Render.com.
-
+# render.yaml (v4 - Based on official Render.com documentation)
 version: "1"
 
-# Define services for web servers and workers
 services:
   # Backend Service: Laravel Application
   - type: web
@@ -57,30 +54,30 @@ services:
           name: helpdesk-db
           property: password
 
-# Define a static site for the frontend
-static_site:
-  name: helpdesk-frontend
-  rootDir: frontend
-  envVars:
-    - key: NODE_VERSION
-      value: "18"
-    - key: BACKEND_URL
-      fromService:
-        type: web
-        name: helpdesk-backend
-        property: url
-  buildCommand: |
-    # Replace the placeholder in the production environment file with the actual backend URL.
-    sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
-    npm install
-    npm run build -- --configuration production
-  staticPublishPath: dist/frontend
-  routes:
-    - type: rewrite
-      source: /*
-      destination: /index.html
+  # Frontend Service: Angular Static Site
+  - type: web
+    name: helpdesk-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: |
+      # Set NODE_VERSION for the build environment
+      export NODE_VERSION=18
+      # Replace the placeholder in the production environment file with the actual backend URL.
+      sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
+      npm install
+      npm run build -- --configuration production
+    publishPath: dist/frontend
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: helpdesk-backend
+          property: url
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
-# Define the database
 databases:
   # PostgreSQL Database Service
   - name: helpdesk-db
