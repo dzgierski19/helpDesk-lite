@@ -3,11 +3,11 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # Install dependencies
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 # Copy source
-COPY frontend .
+COPY . .
 
 # Build production bundle (expects API_URL or BACKEND_URL env at build time)
 RUN npm run vercel-build
