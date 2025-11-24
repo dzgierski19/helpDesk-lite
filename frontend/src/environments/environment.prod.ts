@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  // The '%%API_URL%%' placeholder will be replaced by the actual backend URL during the CI/CD build process on Render.
+  // The 'http://localhost:8000/api' placeholder is replaced during CI build (e.g., npm run set-api-url).
   apiUrl: '%%API_URL%%'
 };
