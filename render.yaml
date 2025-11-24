@@ -1,32 +1,24 @@
-# render.yaml
+# render.yaml v3 - Corrected Structure
 # This file configures the deployment of the Helpdesk-Lite application on Render.com.
-# It defines three services: a PostgreSQL database, a Laravel backend, and an Angular frontend.
 
-# Specifies the version of the blueprint schema.
 version: "1"
 
-# Defines the services that make up the application.
+# Define services for web servers and workers
 services:
   # Backend Service: Laravel Application
   - type: web
     name: helpdesk-backend
-    # Specifies the runtime environment for the service.
     runtime: php
-    # The root directory for the backend code.
     rootDir: backend
-    # Commands to build the backend service.
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
       php artisan migrate:fresh --seed --force
-    # Command to start the backend service. Render provides the $PORT environment variable.
     startCommand: php artisan serve --host 0.0.0.0 --port $PORT
-    # Environment variables for the backend service.
     envVars:
       - key: APP_URL
-        # The external URL of this service, provided by Render.
         fromService:
           type: web
           name: helpdesk-backend
@@ -36,12 +28,10 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        # Let Render generate a secure application key.
         generateValue: true
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        # The internal host of the database service defined below.
         fromService:
           type: psql
           name: helpdesk-db
@@ -67,43 +57,33 @@ services:
           name: helpdesk-db
           property: password
 
-  # Frontend Service: Angular Application
-  - type: static_site
-    name: helpdesk-frontend
-    # The root directory for the frontend code.
-    rootDir: frontend
-    # Environment variables for the frontend service.
-    envVars:
-      - key: NODE_VERSION
-        value: "18" # Specify Node.js version
-      - key: BACKEND_URL
-        # The public URL of the backend service.
-        fromService:
-          type: web
-          name: helpdesk-backend
-          property: url
-    # Commands to build the frontend service.
-    buildCommand: |
-      # Replace the placeholder in the production environment file with the actual backend URL.
-      # The BACKEND_URL env var is provided by Render from the service above.
-      sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
-      npm install
-      npm run build -- --configuration production
-    # The directory containing the static files after the build.
-    staticPublishPath: dist/frontend
-    # Rewrite rule for Single Page Applications (SPAs) to ensure client-side routing works.
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+# Define a static site for the frontend
+static_site:
+  name: helpdesk-frontend
+  rootDir: frontend
+  envVars:
+    - key: NODE_VERSION
+      value: "18"
+    - key: BACKEND_URL
+      fromService:
+        type: web
+        name: helpdesk-backend
+        property: url
+  buildCommand: |
+    # Replace the placeholder in the production environment file with the actual backend URL.
+    sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
+    npm install
+    npm run build -- --configuration production
+  staticPublishPath: dist/frontend
+  routes:
+    - type: rewrite
+      source: /*
+      destination: /index.html
 
-# Defines the database for the application.
+# Define the database
 databases:
   # PostgreSQL Database Service
   - name: helpdesk-db
-    # The name for the database.
     databaseName: helpdesk_db
-    # The user for the database.
     user: helpdesk_user
-    # The plan for the database. 'free' is sufficient for a demo.
     plan: free
