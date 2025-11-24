@@ -5,14 +5,16 @@ services:
   # Backend Service: Laravel Application
   - type: web
     name: helpdesk-backend
-    runtime: php
+    env: php
     rootDir: backend
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
-      php artisan migrate:fresh --seed --force
+    preDeployCommand: |
+      php artisan migrate --force
+      php artisan db:seed --force
     startCommand: php artisan serve --host 0.0.0.0 --port $PORT
     envVars:
       - key: APP_URL
@@ -24,6 +26,8 @@ services:
         value: production
       - key: APP_DEBUG
         value: false
+      - key: LOG_CHANNEL
+        value: stderr
       - key: APP_KEY
         generateValue: true
       - key: DB_CONNECTION
@@ -53,26 +57,26 @@ services:
           type: psql
           name: helpdesk-db
           property: password
+      - key: SESSION_DRIVER
+        value: cookie
 
   # Frontend Service: Angular Static Site
-  - type: web
+  - type: static
     name: helpdesk-frontend
-    runtime: static
     rootDir: frontend
     buildCommand: |
-      # Set NODE_VERSION for the build environment
-      export NODE_VERSION=18
-      # Replace the placeholder in the production environment file with the actual backend URL.
       sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
       npm install
       npm run build -- --configuration production
-    publishPath: dist/frontend
+    staticPublishPath: dist/frontend
     envVars:
       - key: BACKEND_URL
         fromService:
           type: web
           name: helpdesk-backend
           property: url
+      - key: NODE_VERSION
+        value: "20"
     routes:
       - type: rewrite
         source: /*
