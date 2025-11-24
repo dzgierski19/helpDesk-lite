@@ -2,6 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-RUN npm install -g @angular/cli
+# Install dependencies
+COPY frontend/package*.json ./
+RUN npm ci
 
-CMD ["sh", "-c", "npm install && npm start -- --host 0.0.0.0 --port 4200"]
+# Copy source
+COPY frontend .
+
+# Build production bundle (expects API_URL or BACKEND_URL env at build time)
+RUN npm run vercel-build
+
+# Serve static files
+RUN npm install -g http-server
+ENV PORT=3000
+CMD ["sh", "-c", "http-server dist/frontend -p ${PORT} -a 0.0.0.0"]

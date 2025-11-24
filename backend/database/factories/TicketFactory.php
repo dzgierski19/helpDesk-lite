@@ -27,19 +27,19 @@ class TicketFactory extends Factory
      */
     public function definition(): array
     {
-        $priority = $this->faker->randomElement(TicketPriority::cases());
-        $status = $this->faker->randomElement(TicketStatus::cases());
+        $priority = $this->faker()->randomElement(TicketPriority::cases());
+        $status = $this->faker()->randomElement(TicketStatus::cases());
 
         return [
-            'title' => $this->faker->sentence(6),
-            'description' => $this->faker->paragraph(),
+            'title' => $this->faker()->sentence(6),
+            'description' => $this->faker()->paragraph(),
             'priority' => $priority,
             'status' => $status,
             'assignee_id' => User::factory(),
             'creator_id' => User::factory(),
-            'tags' => $this->faker->randomElements(
+            'tags' => $this->faker()->randomElements(
                 ['api', 'bug', 'frontend', 'backend', 'ux', 'integrations'],
-                $this->faker->numberBetween(1, 3)
+                $this->faker()->numberBetween(1, 3)
             ),
         ];
     }
