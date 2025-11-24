@@ -68,7 +68,7 @@ services:
           property: password
 
   # Frontend Service: Angular Application
-  - type: static
+  - type: static_site
     name: helpdesk-frontend
     # The root directory for the frontend code.
     rootDir: frontend
