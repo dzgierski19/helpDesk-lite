@@ -15,4 +15,4 @@ RUN npm run vercel-build
 # Serve static files with SPA fallback (dist/frontend/browser)
 RUN npm install -g serve
 ENV PORT=3000
-CMD ["serve", "-s", "dist/frontend/browser", "-l", "${PORT}"]
+CMD ["sh", "-c", "serve -s dist/frontend/browser -l ${PORT:-3000}"]
