@@ -1,0 +1,25 @@
+FROM php:8.2-cli
+
+WORKDIR /var/www/backend
+
+# Install system deps and PHP extensions needed for Laravel + Postgres.
+RUN apt-get update \
+    && apt-get install -y git unzip libzip-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer globally.
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy the application (includes composer.json/lock).
+COPY backend ./
+
+# Install production dependencies (no dev).
+RUN composer install --no-dev --optimize-autoloader
+
+# Ensure writable dirs exist.
+RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
+    && chmod -R 777 storage bootstrap/cache
+
+# Run migrations/seed then serve the app.
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]

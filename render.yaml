@@ -5,17 +5,9 @@ services:
   # Backend Service: Laravel Application
   - type: web
     name: helpdesk-backend
-    env: php
-    rootDir: backend
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-    preDeployCommand: |
-      php artisan migrate --force
-      php artisan db:seed --force
-    startCommand: php artisan serve --host 0.0.0.0 --port $PORT
+    runtime: docker
+    dockerfilePath: backend/Dockerfile.render
+    dockerContext: .
     envVars:
       - key: APP_ENV
         value: production
@@ -36,7 +28,7 @@ services:
 
   # Frontend Service: Angular Static Site
   - type: web
-    env: static
+    runtime: static
     name: helpdesk-frontend
     rootDir: frontend
     buildCommand: |
