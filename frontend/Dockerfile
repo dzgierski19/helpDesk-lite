@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 
 # Build production bundle (expects API_URL or BACKEND_URL env at build time)
-RUN npm run vercel-build
+RUN npm run railway-build
 
 # Serve static files with SPA fallback (dist/frontend/browser)
 RUN npm install -g serve
