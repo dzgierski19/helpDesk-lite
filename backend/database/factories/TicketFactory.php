@@ -27,7 +27,7 @@ class TicketFactory extends Factory
      */
     public function definition(): array
     {
-        $faker = $this->faker;
+        $faker = $this->faker ?? \Faker\Factory::create();
         $priority = $faker->randomElement(TicketPriority::cases());
         $status = $faker->randomElement(TicketStatus::cases());
 
