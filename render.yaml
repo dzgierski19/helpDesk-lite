@@ -5,7 +5,6 @@ services:
   # Backend Service: Laravel Application
   - type: web
     name: helpdesk-backend
-    plan: free
     runtime: docker
     dockerfilePath: backend/Dockerfile.render
     dockerContext: .
@@ -27,9 +26,8 @@ services:
 
   # Frontend Service: Angular Static Site
   - type: web
-    runtime: static
     name: helpdesk-frontend
-    plan: free
+    runtime: static
     rootDir: frontend
     buildCommand: |
       BACKEND_URL="https://${BACKEND_HOST}"
