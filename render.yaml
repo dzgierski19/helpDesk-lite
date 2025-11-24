@@ -61,7 +61,8 @@ services:
         value: cookie
 
   # Frontend Service: Angular Static Site
-  - type: static_site
+  - type: web
+    env: static
     name: helpdesk-frontend
     rootDir: frontend
     buildCommand: |
