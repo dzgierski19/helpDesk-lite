@@ -4,8 +4,8 @@ WORKDIR /var/www/backend
 
 # Install system deps and PHP extensions needed for Laravel + Postgres.
 RUN apt-get update \
-    && apt-get install -y git unzip libzip-dev libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql \
+    && apt-get install -y git unzip libzip-dev libpq-dev libsqlite3-dev \
+    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer globally.
@@ -22,4 +22,4 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions sto
     && chmod -R 777 storage bootstrap/cache
 
 # Run migrations/seed then serve the app.
-CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD ["sh", "-c", "if [ ! -f database/database.sqlite ]; then touch database/database.sqlite; fi && php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
