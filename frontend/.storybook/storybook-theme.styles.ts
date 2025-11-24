@@ -22,15 +22,15 @@ const auroraStyles = `
   --surface-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
   --radius-card: 1.25rem;
   --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.16);
-  --sb-aurora-bg: var(--gradient-aurora);
-  --sb-aurora-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(15, 23, 42, 0.35));
-  --sb-aurora-border: rgba(255, 255, 255, 0.18);
-  --sb-aurora-text: #f8fafc;
+  --sb-aurora-bg: var(--surface-glass, #f8fafc);
+  --sb-aurora-surface: var(--surface-glass, #f8fafc);
+  --sb-aurora-border: rgba(15, 23, 42, 0.08);
+  --sb-aurora-text: var(--color-text, #0f172a);
 }
 
 body.sb-show-main {
-  background: var(--sb-aurora-bg);
-  color: var(--sb-aurora-text);
+  background: var(--surface-glass, #f8fafc);
+  color: var(--color-text, #0f172a);
   font-family: inherit;
   min-height: 100vh;
 }
@@ -43,8 +43,8 @@ body.sb-show-main {
 }
 
 .sbdocs.sbdocs-wrapper {
-  background: var(--sb-aurora-bg);
-  color: var(--sb-aurora-text);
+  background: var(--surface-glass, #f8fafc);
+  color: var(--color-text, #0f172a);
 }
 
 .sbdocs.sbdocs-preview,
@@ -73,36 +73,36 @@ body.sb-show-main {
 }
 
 .sbdocs .docblock-argstable {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .sbdocs .sbdocs-title {
-  color: #ffffff;
+  color: var(--color-text, #0f172a);
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
 .sbdocs .sbdocs-content nav {
-  background: rgba(5, 11, 22, 0.65);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 18px;
   padding: 0.75rem 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 45px rgba(5, 11, 22, 0.4);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
 }
 
 .sbdocs .sbdocs-content nav * {
-  color: rgba(241, 245, 249, 0.95) !important;
+  color: var(--color-text, #0f172a) !important;
 }
 
 .sbdocs .sbdocs-toc__link {
-  color: #22c55e;
+  color: var(--color-primary, #6366f1);
 }
 
 .sbdocs .sbdocs-toc__link.sbdocs-toc__link--active {
-  color: #c084fc;
+  color: var(--color-accent, #ec4899);
 }
 
 /* Storybook sidebar tweaks */

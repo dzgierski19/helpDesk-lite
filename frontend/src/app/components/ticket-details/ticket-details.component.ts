@@ -191,6 +191,38 @@ export class TicketDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  copyDescription(description: string | null | undefined): void {
+    const value = description?.trim();
+    if (!value) {
+      this.uiService.showSnackbar('Nothing to copy.');
+      return;
+    }
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(value)
+        .then(() => this.uiService.showSnackbar('Description copied.'))
+        .catch(() => this.uiService.showSnackbar('Copy failed.'));
+      return;
+    }
+
+    // Fallback if Clipboard API unavailable
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      this.uiService.showSnackbar('Description copied.');
+    } catch {
+      this.uiService.showSnackbar('Copy failed.');
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
   private refreshTicket(): void {
     if (!this.authService.isAuthenticated()) {
       return;

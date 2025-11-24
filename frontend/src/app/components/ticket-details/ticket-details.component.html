@@ -2,70 +2,85 @@
   <ng-container *ngIf="ticket$ | async as ticket; else loadingTicket">
     <section class="ticket-details-wrapper">
       <div class="ticket-hero mat-elevation-z3">
-        <div class="hero-text">
-          <span class="hero-eyebrow">Ticket #{{ ticket.id }}</span>
-          <h1 class="hero-title">{{ ticket.title }}</h1>
-          <p class="hero-meta">
-            Created {{ ticket.created_at | date: 'mediumDate' }}
-            <ng-container *ngIf="ticket.updated_at">
-              · Updated {{ ticket.updated_at | date: 'medium' }}
-            </ng-container>
-          </p>
-        </div>
-        <div class="hero-chips">
-          <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
-          <app-status-label [status]="ticket.status"></app-status-label>
+        <div class="hero-bar">
+          <div class="hero-id-chip">
+            <mat-icon>confirmation_number</mat-icon>
+            <span>Ticket #{{ ticket.id }}</span>
+          </div>
+          <div class="hero-chip-row">
+            <app-priority-badge [priority]="ticket.priority"></app-priority-badge>
+            <app-status-label [status]="ticket.status"></app-status-label>
+          </div>
         </div>
 
-        <ng-container *ngIf="canUpdateTicket()">
-          <div class="hero-actions">
-            <p class="hero-actions-label">Update progress</p>
-            <div class="hero-actions-buttons">
-              <button
-                mat-stroked-button
-                color="primary"
-                type="button"
-                class="status-action-button progress-action-button"
-                *ngFor="let action of progressActions"
-                [disabled]="ticket.status === action.status || statusUpdateInFlight === action.status"
-                (click)="updateTicketStatus(ticket.id, action.status)"
-              >
-                <mat-icon *ngIf="statusUpdateInFlight !== action.status">{{ action.icon }}</mat-icon>
-                <mat-icon class="spinning-icon" *ngIf="statusUpdateInFlight === action.status">autorenew</mat-icon>
-                {{ action.label }}
-              </button>
-            </div>
+        <div class="hero-body">
+          <div class="hero-text">
+            <span class="hero-eyebrow">Support ticket</span>
+            <h1 class="hero-title">{{ ticket.title }}</h1>
+            <p class="hero-meta">
+              Created {{ ticket.created_at | date: 'mediumDate' }}
+              <ng-container *ngIf="ticket.updated_at">
+                · Updated {{ ticket.updated_at | date: 'medium' }}
+              </ng-container>
+            </p>
           </div>
 
-          <div class="hero-actions hero-assign">
-            <p class="hero-actions-label">Assignment</p>
-            <div class="hero-actions-buttons">
-              <button
-                mat-stroked-button
-                color="accent"
-                type="button"
-                class="status-action-button assign-action-button"
-                [disabled]="assignInFlight || !currentUser"
-                (click)="toggleAssignee(ticket.id, ticket.assignee_id)"
-              >
-                <mat-icon *ngIf="!assignInFlight">
-                  {{ ticket.assignee_id === currentUser?.id ? 'person_remove' : 'person_add' }}
-                </mat-icon>
-                <mat-icon class="spinning-icon" *ngIf="assignInFlight">autorenew</mat-icon>
-                {{ ticket.assignee_id === currentUser?.id ? 'Unassign' : 'Assign to me' }}
-              </button>
-              <span class="hero-assign-note" *ngIf="currentUser">
-                Current assignee: {{ ticket.assignee_id || 'Unassigned' }}
-              </span>
+          <ng-container *ngIf="canUpdateTicket()">
+            <div class="hero-control-stack">
+              <div class="hero-actions">
+                <p class="hero-actions-label">Update progress</p>
+                <div class="hero-actions-buttons">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    class="status-action-button progress-action-button"
+                    *ngFor="let action of progressActions"
+                    [disabled]="
+                      ticket.status === action.status || statusUpdateInFlight === action.status
+                    "
+                    (click)="updateTicketStatus(ticket.id, action.status)"
+                  >
+                    <mat-icon *ngIf="statusUpdateInFlight !== action.status">{{ action.icon }}</mat-icon>
+                    <mat-icon class="spinning-icon" *ngIf="statusUpdateInFlight === action.status"
+                      >autorenew</mat-icon
+                    >
+                    {{ action.label }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="hero-actions hero-assign">
+                <p class="hero-actions-label">Assignment</p>
+                <div class="hero-actions-buttons">
+                  <button
+                    mat-stroked-button
+                    color="accent"
+                    type="button"
+                    class="status-action-button assign-action-button"
+                    [disabled]="assignInFlight || !currentUser"
+                    (click)="toggleAssignee(ticket.id, ticket.assignee_id)"
+                  >
+                    <mat-icon *ngIf="!assignInFlight">
+                      {{ ticket.assignee_id === currentUser?.id ? 'person_remove' : 'person_add' }}
+                    </mat-icon>
+                    <mat-icon class="spinning-icon" *ngIf="assignInFlight">autorenew</mat-icon>
+                    {{ ticket.assignee_id === currentUser?.id ? 'Unassign' : 'Assign to me' }}
+                  </button>
+                  <span class="hero-assign-note" *ngIf="currentUser">
+                    Current assignee: {{ ticket.assignee_id || 'Unassigned' }}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </ng-container>
+          </ng-container>
+        </div>
       </div>
 
       <div class="details-grid">
         <mat-card class="detail-card glass-card description-card">
           <mat-card-content>
-            <div class="section-heading">
+            <div class="section-heading description-heading">
               <div class="heading-icon">
                 <mat-icon>description</mat-icon>
               </div>
@@ -73,14 +88,26 @@
                 <p class="section-eyebrow">Full Description</p>
                 <h2>Conversation &amp; context</h2>
               </div>
-              <button type="button" class="ghost-pill" aria-label="Copy description">
-                <mat-icon>content_copy</mat-icon>
-                Copy
-              </button>
             </div>
 
-            <div class="ticket-description">
-              {{ ticket.description || 'No description provided.' }}
+            <div class="description-shell">
+              <div class="description-shell-header">
+                <div class="description-decor">
+                  <mat-icon>description</mat-icon>
+                </div>
+                <button
+                  type="button"
+                  class="ghost-pill copy-ghost"
+                  aria-label="Copy description"
+                  (click)="copyDescription(ticket.description)"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                  Copy
+                </button>
+              </div>
+              <div class="ticket-description">
+                {{ ticket.description || 'No description provided.' }}
+              </div>
             </div>
 
             <div class="ticket-meta-grid">
@@ -121,22 +148,25 @@
             </div>
 
             <div class="status-timeline" *ngIf="ticket.status_changes?.length; else timelineFallback">
+              <div class="timeline-spine"></div>
               <div class="timeline-item" *ngFor="let change of ticket.status_changes; let idx = index">
                 <div class="timeline-icon" [ngClass]="{ accent: idx === 0 }">
                   <mat-icon>{{ idx === 0 ? 'flag_circle' : 'sync_alt' }}</mat-icon>
                 </div>
                 <div class="timeline-content">
-                  <p class="timeline-title">
-                    {{ change.old_status | titlecase }}
-                    <span class="arrow">→</span>
-                    {{ change.new_status | titlecase }}
-                  </p>
+                  <div class="timeline-row">
+                    <p class="timeline-title">
+                      {{ change.old_status | titlecase }}
+                      <span class="arrow">→</span>
+                      {{ change.new_status | titlecase }}
+                    </p>
+                    <span class="timeline-timestamp">
+                      {{ change.changed_at | date: 'medium' }}
+                    </span>
+                  </div>
                   <div class="timeline-value">
                     <app-status-label [status]="change.new_status"></app-status-label>
                   </div>
-                  <span class="timeline-timestamp">
-                    {{ change.changed_at | date: 'medium' }}
-                  </span>
                 </div>
               </div>
             </div>
@@ -148,7 +178,7 @@
 
         <mat-card class="detail-card glass-card triage-card ai-card">
           <mat-card-content>
-            <div class="section-heading ai-heading">
+            <div class="section-heading ai-heading ai-card-header">
               <div class="heading-icon sparkle">
                 <mat-icon>auto_awesome</mat-icon>
               </div>
@@ -156,6 +186,7 @@
                 <p class="section-eyebrow">AI Triage</p>
                 <h2>Aurora assistant</h2>
               </div>
+              <span class="ai-badge">Smart routing</span>
             </div>
 
             <ng-container *ngIf="(currentUserRole$ | async) as role">

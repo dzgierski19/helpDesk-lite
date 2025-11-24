@@ -1729,3 +1729,64 @@ commands:
 
       Provide the full, updated code for the `frontend/.storybook/storybook-theme.styles.ts` file.
 
+  frontend:apply-shared-theme-in-storybook:
+    prompt: |
+      [Objective]
+
+      Integrate the Angular project's global styles (SCSS theme variables) and Material Icons into the Storybook 8 environment, ensuring they are correctly applied and visible in both the Canvas and Docs views.
+
+      [Context]
+
+      *   **Frameworks**: Angular 17, Storybook 8 (using the Vite builder).
+      *   **Global Style Files**:
+          *   `src/styles/_theme.scss` (contains CSS variables for colors and theme).
+          *   `src/styles.scss` (main application stylesheet that imports `_theme.scss`).
+      *   **Storybook Configuration Files**:
+          *   `frontend/.storybook/preview.ts` (primary file for global Storybook configuration).
+          *   `frontend/.storybook/storybook-theme.styles.ts` (custom theme for the Storybook UI itself, not the components).
+      *   **Icons**: Material Icons library.
+
+      [Problem Statement]
+
+      The Storybook instance currently fails to load the application's global styles from `src/styles.scss` and `src/styles/_theme.scss`. This results in components being rendered without the correct theme colors, typography, and spacing. Additionally, Material Icons are not being loaded, causing them to be displayed incorrectly or not at all within components.
+
+      [Acceptance Criteria]
+
+      1.  Theme colors and CSS variables defined in `src/styles/_theme.scss` must be correctly applied to components rendered in Storybook's Canvas and Docs tabs.
+      2.  Material Icons must be visible and render correctly within components displayed in Storybook.
+      3.  The `npm run storybook` command must execute successfully without any SCSS/CSS loader errors.
+      4.  The `npm run build-storybook` command must complete successfully without errors.
+
+      [Constraints]
+
+      *   You must not modify the `Dockerfile`, any Railway configurations, or any environment variables related to deployment (`.env`).
+      *   You must not alter any backend or frontend deployment scripts.
+      *   The solution must be compatible with the Vite builder for Storybook 8 and must not introduce custom Webpack loader configurations or other "hacks".
+
+      [Execution Plan]
+
+      1.  **Modify `frontend/.storybook/preview.ts`:** This file is the correct entry point for injecting global styles into Storybook with Vite.
+
+      2.  **Import Global Stylesheets:** Add the following import statements at the top of the `frontend/.storybook/preview.ts` file. Vite will process these and make them available globally within Storybook.
+
+          ```typescript
+          // .storybook/preview.ts
+
+          import '../src/styles.scss';
+          import 'material-icons/iconfont/material-icons.css';
+
+          // ... rest of the preview.ts configuration (e.g., decorators, parameters)
+          ```
+
+      3.  **Verify SCSS Imports:** Ensure that the main `src/styles.scss` file already contains the import for the theme file (e.g., `@import 'styles/theme';`). This is standard practice in Angular, but it's a necessary precondition for the above step to work correctly.
+
+      4.  **Clean Up (If Necessary):** Remove any old or non-functional attempts to load styles from other Storybook configuration files to prevent conflicts.
+
+      [Final Commit]
+
+      Once the changes are verified, commit the work with the following message:
+
+      ```
+      fix: apply shared theme in storybook
+      ```
+
