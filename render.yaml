@@ -61,14 +61,14 @@ services:
         value: cookie
 
   # Frontend Service: Angular Static Site
-  - type: static
+  - type: static_site
     name: helpdesk-frontend
     rootDir: frontend
     buildCommand: |
       sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
       npm install
       npm run build -- --configuration production
-    staticPublishPath: dist/frontend
+    publishPath: dist/frontend
     envVars:
       - key: BACKEND_URL
         fromService:
