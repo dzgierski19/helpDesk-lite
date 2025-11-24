@@ -17,11 +17,6 @@ services:
       php artisan db:seed --force
     startCommand: php artisan serve --host 0.0.0.0 --port $PORT
     envVars:
-      - key: APP_URL
-        fromService:
-          type: web
-          name: helpdesk-backend
-          property: url
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -32,31 +27,10 @@ services:
         generateValue: true
       - key: DB_CONNECTION
         value: pgsql
-      - key: DB_HOST
-        fromService:
-          type: psql
+      - key: DB_URL
+        fromDatabase:
           name: helpdesk-db
-          property: host
-      - key: DB_PORT
-        fromService:
-          type: psql
-          name: helpdesk-db
-          property: port
-      - key: DB_DATABASE
-        fromService:
-          type: psql
-          name: helpdesk-db
-          property: database
-      - key: DB_USERNAME
-        fromService:
-          type: psql
-          name: helpdesk-db
-          property: user
-      - key: DB_PASSWORD
-        fromService:
-          type: psql
-          name: helpdesk-db
-          property: password
+          property: connectionString
       - key: SESSION_DRIVER
         value: cookie
 
@@ -66,16 +40,17 @@ services:
     name: helpdesk-frontend
     rootDir: frontend
     buildCommand: |
+      BACKEND_URL="https://${BACKEND_HOST}"
       sed -i "s|%%API_URL%%|${BACKEND_URL}/api|g" src/environments/environment.prod.ts
       npm install
       npm run build -- --configuration production
     staticPublishPath: dist/frontend
     envVars:
-      - key: BACKEND_URL
+      - key: BACKEND_HOST
         fromService:
           type: web
           name: helpdesk-backend
-          property: url
+          property: host
       - key: NODE_VERSION
         value: "20"
     routes:
